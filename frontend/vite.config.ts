@@ -8,14 +8,17 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    reporters: ['default', ['junit', { outputFile: 'reports/junit.xml' }]],
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       reporter: ['text', 'html', 'lcov'],
       include: [
         'src/components/splitview/**',
         'src/components/ErrorBoundary.tsx',
         'src/components/Toast.tsx',
         'src/components/DeviceList.tsx',
+        'src/components/DeviceForm.tsx',
+        'src/components/FtpFileManager.tsx',
         'src/api/client.ts',
       ],
     },

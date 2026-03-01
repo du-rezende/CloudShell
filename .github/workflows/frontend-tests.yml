@@ -28,26 +28,79 @@ jobs:
         working-directory: frontend
         run: npm ci --silent
 
+      - name: Audit dependencies
+        working-directory: frontend
+        # do not fail the job; just capture the output and add to summary
+        run: |
+          echo "## npm audit results" >> "$GITHUB_STEP_SUMMARY"
+          npm audit --json 2>&1 | tee audit-output.txt || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat audit-output.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate JUnit report for npm audit
+        working-directory: frontend
+        run: |
+          mkdir -p reports
+          # wrap the raw JSON in a minimal JUnit XML so the publish action can report it
+          out=$(cat audit-output.txt)
+          cat <<'XML' >reports/npm-audit.xml
+          <?xml version="1.0" encoding="UTF-8"?>
+          <testsuites>
+            <testsuite name="npm audit" tests="1" failures="0">
+              <testcase classname="npm" name="audit">
+                <system-out><![CDATA[$out]]></system-out>
+              </testcase>
+            </testsuite>
+          </testsuites>
+          XML
+
+      - name: Create reports directory
+        working-directory: frontend
+        run: mkdir -p reports
+
       - name: Run Vitest with coverage
         working-directory: frontend
-        run: npm run test:coverage
+        run: npm run test:coverage 2>&1 | tee coverage-output.txt
 
       - name: Write coverage summary to job summary
         if: always()
         working-directory: frontend
         run: |
-          echo "## Frontend Test Coverage" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Frontend Test Coverage (Node ${{ inputs.node-version }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [ -d coverage ]; then
-            echo "Coverage report generated. See artifact for full HTML report." >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coverage-output.txt ]; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat coverage-output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No coverage data available." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Upload JUnit test results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-junit-results-node${{ inputs.node-version }}
+          path: frontend/reports/junit.xml
+          retention-days: 30
 
       - name: Upload coverage report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-coverage-${{ github.run_id }}
+          name: frontend-coverage-node${{ inputs.node-version }}
           path: frontend/coverage/
           retention-days: 14
+
+      - name: Publish test results check (PR only)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          files: |
+            frontend/reports/junit.xml
+            frontend/reports/npm-audit.xml
+          check_name: "Frontend Test Results (Node ${{ inputs.node-version }})"
+          comment_mode: always
+          report_individual_runs: true
+          github_token: ${{ github.token }}

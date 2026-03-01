@@ -4,6 +4,7 @@ import { DeviceList } from "../components/DeviceList";
 import { DeviceForm } from "../components/DeviceForm";
 import { Terminal } from "../components/Terminal";
 import { FileManager } from "../components/FileManager";
+import { FtpFileManager } from "../components/FtpFileManager";
 import { SessionBadge } from "../components/SessionBadge";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
 import { AuditLogModal } from "../components/AuditLogModal";
@@ -186,7 +187,9 @@ export function Dashboard({ onLogout }: Props) {
                   : "text-slate-400 hover:bg-slate-800 border border-transparent"
                 }`}
             >
-              {tab.device.connection_type === "sftp"
+              {tab.device.connection_type === "sftp" ||
+               tab.device.connection_type === "ftp" ||
+               tab.device.connection_type === "ftps"
                 ? <FolderOpen size={11} className="flex-shrink-0" />
                 : <TerminalIcon size={11} className="flex-shrink-0" />
               }
@@ -301,6 +304,8 @@ export function Dashboard({ onLogout }: Props) {
                 >
                   {tab.device.connection_type === "sftp"
                     ? <FileManager device={tab.device} />
+                    : tab.device.connection_type === "ftp" || tab.device.connection_type === "ftps"
+                    ? <FtpFileManager device={tab.device} />
                     : <Terminal device={tab.device} />
                   }
                 </div>

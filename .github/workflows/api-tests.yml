@@ -136,7 +136,7 @@ jobs:
           RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/devices/)
           echo "$RESP"
           echo "$RESP" | python3 -c "
-          import sys, json
+          import sys, json, os
           d = json.load(sys.stdin)
           assert d == [], f'Expected empty list, got {d}'
           print('✅ Empty device list OK')
@@ -538,6 +538,14 @@ jobs:
             || (echo "Expected 204 on double logout, got $HTTP" && exit 1)
 
       # ── Teardown ─────────────────────────────────────────────────────────────
+      - name: Write integration test summary to job summary
+        if: always()
+        run: |
+          echo "## API Integration Tests (Python ${{ inputs.python-version }} / Node ${{ inputs.node-version }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "All curl-based smoke tests ran against a live backend." >> "$GITHUB_STEP_SUMMARY"
+          echo "See individual step logs above for per-test results." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Stop backend server
         if: always()
         run: kill "$BACKEND_PID" 2>/dev/null || true

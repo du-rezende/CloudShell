@@ -13,6 +13,11 @@ on:
   pull_request:
     branches:
       - "**"
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
     paths-ignore:
       - "docs/**"
       - "website/**"
@@ -34,23 +39,39 @@ on:
 jobs:
   unit-tests:
     name: Unit Tests
+    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
     uses: ./.github/workflows/unit-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
 
   frontend-tests:
     name: Frontend Tests
+    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
     uses: ./.github/workflows/frontend-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       node-version: ${{ inputs.node-version || '20' }}
 
   integration-tests:
     name: Integration Tests
+    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
     uses: ./.github/workflows/api-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
       node-version: ${{ inputs.node-version || '20' }}
 
   docker-build:
     name: Docker Build
+    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
     uses: ./.github/workflows/docker-build.yml

@@ -28,6 +28,9 @@
 - Run tests on every merge request
 - When performing tests on the dev machine, prefer writing them as scripts and running them from the command line instead of plain text inline commands
 - Every feature should have dedicated tests in the tests folder of the project
+- Ensure smoke tests are available for all private and public APIs
+- Ensure all tests (both frontend and backend) are run in a consistent environment (e.g. using Docker)
+- Ensure all tests (both frontend and backend) are run at every pull request creation or update
 
 ## Security considerations
 
@@ -35,7 +38,7 @@
 - Configure all apps to run on the least privileged user
 - Implement rate limiting and monitoring for all APIs
 - Isolate all functions and services to minimize the attack surface
-  - Ideally by having a microservices architecture with backend on a different container from the frontend
+  - Isolation is achieved by having a microservices architecture with backend on a different container from the frontend
 
 ## Backward compatibility
 

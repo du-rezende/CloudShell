@@ -14,10 +14,12 @@ class AuthType(str, enum.Enum):
 
 
 class ConnectionType(str, enum.Enum):
-    """Connection type: interactive SSH terminal or SFTP file manager."""
+    """Connection type: interactive SSH terminal, SFTP file manager, or FTP/FTPS file manager."""
 
     ssh = "ssh"
     sftp = "sftp"
+    ftp = "ftp"
+    ftps = "ftps"
 
 
 class Device(Base):
