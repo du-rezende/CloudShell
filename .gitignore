@@ -376,5 +376,6 @@ frontend/dist/
 
 ### OTHERS ###
 *_smoke.sh
-reports/*
-junit.xml
+**/reports/*.xml
+audit-output.txt
+coverage-output.txt
