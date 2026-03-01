@@ -99,7 +99,7 @@ jobs:
 
       - name: Publish test results check
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ secrets.GH_PAT != '' }}
+        if: ${{ env.GITHUB_TOKEN != '' }}
         with:
           files: reports/junit.xml
           check_name: "Unit Test Results (Python ${{ inputs.python-version }})"
