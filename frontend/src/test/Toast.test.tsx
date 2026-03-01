@@ -38,9 +38,11 @@ function setup() {
 
 describe('useToast — outside provider', () => {
   it('throws when called outside ToastProvider', () => {
-    // Render a component that calls useToast without a provider
+    // Suppress React's error boundary console output for this intentional throw
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     function Bad() { useToast(); return null; }
     expect(() => render(<Bad />)).toThrow('useToast must be used inside <ToastProvider>');
+    spy.mockRestore();
   });
 });
 

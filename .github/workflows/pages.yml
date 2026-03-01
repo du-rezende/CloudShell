@@ -14,10 +14,6 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
-# prefer using the personal access token for any default token needs
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 permissions:
   contents: read
   pages: write

@@ -42,8 +42,8 @@ Supports connections audit:
 - **Error boundary**: graceful recovery screen for unexpected frontend errors
 - **Docker Compose deploy**: single command to run in production
 - **Concurrent connections**: support multiple simultaneous SSH sessions
-- **SFTP file manager**: browse, upload, download, rename, and delete files on any device directly from the browser
-- **Split view**: view multiple sessions side-by-side with configurable layouts (vertical, horizontal, 2x2, or any custom grid up to 4x4)
+- **SFTP file manager**: browse, upload, download, rename, and delete files on any device directly from the browser.
+- **FTP/FTPS file manager**: same convenient web-based file operations over plain FTP or explicit FTPS (AUTH TLS).
 
 Please note: all sessions are initiated on the server side and not the client.
 

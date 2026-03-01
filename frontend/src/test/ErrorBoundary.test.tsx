@@ -10,7 +10,7 @@
  * - clicking "Reload page" calls window.location.reload
  */
 
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -20,9 +20,16 @@ function Bomb(): React.ReactNode {
   throw new Error('Test render error');
 }
 
-// Suppress the expected console.error noise from React's error boundary
-const originalConsoleError = console.error;
-afterEach(() => { console.error = originalConsoleError; });
+// Suppress the expected console.error noise that React emits when a component
+// throws during render (both its own log and the jsdom re-throw via window
+// error event). The spy is installed before every test and restored after.
+let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+beforeEach(() => {
+  consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+});
+afterEach(() => {
+  consoleErrorSpy.mockRestore();
+});
 
 describe('ErrorBoundary', () => {
   it('renders children when there is no error', () => {
@@ -35,7 +42,6 @@ describe('ErrorBoundary', () => {
   });
 
   it('renders the fallback UI when a child throws', () => {
-    console.error = vi.fn(); // suppress React's error output
     render(
       <ErrorBoundary>
         <Bomb />
@@ -45,7 +51,6 @@ describe('ErrorBoundary', () => {
   });
 
   it('displays the thrown error message in the fallback', () => {
-    console.error = vi.fn();
     render(
       <ErrorBoundary>
         <Bomb />
@@ -55,7 +60,6 @@ describe('ErrorBoundary', () => {
   });
 
   it('shows the Reload page button', () => {
-    console.error = vi.fn();
     render(
       <ErrorBoundary>
         <Bomb />
@@ -65,7 +69,6 @@ describe('ErrorBoundary', () => {
   });
 
   it('calls window.location.reload when Reload page is clicked', async () => {
-    console.error = vi.fn();
     const reload = vi.fn();
     Object.defineProperty(window, 'location', {
       writable: true,

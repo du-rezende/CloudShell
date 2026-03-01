@@ -8,10 +8,6 @@ on:
         type: string
         default: "20"
 
-# make sure any default token reference uses the GH_PAT env
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 jobs:
   frontend-tests:
     name: Frontend unit tests (Vitest)
@@ -32,6 +28,10 @@ jobs:
         working-directory: frontend
         run: npm ci --silent
 
+      - name: Create reports directory
+        working-directory: frontend
+        run: mkdir -p reports
+
       - name: Run Vitest with coverage
         working-directory: frontend
         run: npm run test:coverage 2>&1 | tee coverage-output.txt
@@ -40,7 +40,7 @@ jobs:
         if: always()
         working-directory: frontend
         run: |
-          echo "## Frontend Test Coverage" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Frontend Test Coverage (Node ${{ inputs.node-version }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           if [ -f coverage-output.txt ]; then
             echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -50,10 +50,28 @@ jobs:
             echo "No coverage data available." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Upload JUnit test results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-junit-results-node${{ inputs.node-version }}
+          path: frontend/reports/junit.xml
+          retention-days: 30
+
       - name: Upload coverage report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-coverage-${{ github.run_id }}
+          name: frontend-coverage-node${{ inputs.node-version }}
           path: frontend/coverage/
           retention-days: 14
+
+      - name: Publish test results check (PR only)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: ${{ github.event_name == 'pull_request' }}
+        with:
+          files: frontend/reports/junit.xml
+          check_name: "Frontend Test Results (Node ${{ inputs.node-version }})"
+          comment_mode: always
+          report_individual_runs: true
+          github_token: ${{ github.token }}
