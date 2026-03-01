@@ -376,4 +376,6 @@ frontend/dist/
 
 ### OTHERS ###
 *_smoke.sh
-reports/*
+**/reports/*.xml
+audit-output.txt
+coverage-output.txt

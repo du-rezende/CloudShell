@@ -73,4 +73,5 @@ jobs:
 
   docker-build:
     name: Docker Build
+    if: ${{ github.event.pull_request.draft == false || github.event_name != 'pull_request' }}
     uses: ./.github/workflows/docker-build.yml
