@@ -117,7 +117,7 @@ async def open_session(
             source_ip=client_ip,
         )
     except asyncssh.PermissionDenied:
-        raise HTTPException(status_code=401, detail="SSH authentication failed")
+        raise HTTPException(status_code=502, detail="SSH authentication failed")
     except asyncssh.ConnectionLost:
         raise HTTPException(status_code=504, detail="SSH connection lost")
     except asyncssh.HostKeyNotVerifiable as exc:
