@@ -39,18 +39,24 @@ jobs:
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/unit-tests.yml
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
 
   frontend-tests:
     name: Frontend Tests
     uses: ./.github/workflows/frontend-tests.yml
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
     with:
       node-version: ${{ inputs.node-version || '20' }}
 
   integration-tests:
     name: Integration Tests
     uses: ./.github/workflows/api-tests.yml
+    secrets:
+      GH_PAT: ${{ secrets.GH_PAT }}
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
       node-version: ${{ inputs.node-version || '20' }}

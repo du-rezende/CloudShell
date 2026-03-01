@@ -54,7 +54,7 @@ jobs:
       - name: Write coverage summary to job summary
         if: always()
         run: |
-          echo "## Test Coverage Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "## Backend Unit Test Coverage (Python ${{ inputs.python-version }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           if python -m coverage report --rcfile=pytest.ini >> "$GITHUB_STEP_SUMMARY" 2>/dev/null; then
@@ -65,12 +65,6 @@ jobs:
             echo "Coverage data not available" >> "$GITHUB_STEP_SUMMARY"
           fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-        env:
-          COVERAGE_FILE: .coverage
-
-      - name: Add coverage to job summary (xml fallback)
-        if: always()
-        run: |
           if [ -f reports/coverage.xml ]; then
             python3 - <<'EOF'
           import xml.etree.ElementTree as ET, os
@@ -89,6 +83,8 @@ jobs:
               f.write(f"| Branch coverage | {branch_rate:.1f}% |\n")
           EOF
           fi
+        env:
+          COVERAGE_FILE: .coverage
 
       - name: Publish JUnit test results artifact
         uses: actions/upload-artifact@v4
@@ -106,9 +102,9 @@ jobs:
           path: reports/
           retention-days: 30
 
-      - name: Publish test results check
+      - name: Publish test results check (PR only)
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ env.GH_PAT != '' }}
+        if: ${{ env.GH_PAT != '' && github.event_name == 'pull_request' }}
         with:
           files: reports/junit.xml
           check_name: "Unit Test Results (Python ${{ inputs.python-version }})"
