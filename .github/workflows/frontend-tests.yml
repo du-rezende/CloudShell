@@ -34,7 +34,7 @@ jobs:
 
       - name: Run Vitest with coverage
         working-directory: frontend
-        run: npm run test:coverage
+        run: npm run test:coverage 2>&1 | tee coverage-output.txt
 
       - name: Write coverage summary to job summary
         if: always()
@@ -42,8 +42,10 @@ jobs:
         run: |
           echo "## Frontend Test Coverage" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [ -d coverage ]; then
-            echo "Coverage report generated. See artifact for full HTML report." >> "$GITHUB_STEP_SUMMARY"
+          if [ -f coverage-output.txt ]; then
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            cat coverage-output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No coverage data available." >> "$GITHUB_STEP_SUMMARY"
           fi

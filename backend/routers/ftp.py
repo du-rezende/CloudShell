@@ -1,0 +1,276 @@
+"""
+routers/ftp.py — REST endpoints for FTP/FTPS file manager sessions.
+
+Session lifecycle
+─────────────────
+POST /ftp/session/{device_id}    → open FTP/FTPS session, returns session_id
+GET  /ftp/{session_id}/list      → list directory contents
+GET  /ftp/{session_id}/download  → download a file
+POST /ftp/{session_id}/upload    → upload a file (multipart form)
+POST /ftp/{session_id}/delete    → delete a file
+POST /ftp/{session_id}/rename    → rename / move
+POST /ftp/{session_id}/mkdir     → create directory
+DELETE /ftp/{session_id}         → close session
+"""
+import logging
+import os
+from urllib.parse import unquote
+
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File
+from fastapi.responses import Response
+from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.database import get_db
+from backend.models.device import ConnectionType, Device
+from backend.routers.auth import get_current_user
+from backend.services.audit import (
+    ACTION_SESSION_ENDED,
+    ACTION_SESSION_STARTED,
+    get_client_ip,
+    write_audit,
+)
+from backend.services.crypto import decrypt
+from backend.services.ftp import (
+    close_ftp_session,
+    delete_remote,
+    get_ftp_session_meta,
+    list_directory,
+    mkdir_remote,
+    open_ftp_session,
+    read_file_bytes,
+    rename_remote,
+    write_file_bytes,
+)
+
+log = logging.getLogger(__name__)
+router = APIRouter(prefix="/ftp", tags=["ftp"])
+
+
+# ── Session management ────────────────────────────────────────────────────────
+
+
+@router.post("/session/{device_id}")
+async def open_session(
+    device_id: int,
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: str = Depends(get_current_user),
+):
+    """Open an FTP/FTPS session for a device and return a session_id."""
+    device: Device | None = await db.get(Device, device_id)
+    if not device:
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    if device.connection_type not in (ConnectionType.ftp, ConnectionType.ftps):
+        raise HTTPException(
+            status_code=400,
+            detail="Device is not configured as FTP/FTPS",
+        )
+
+    password: str | None = None
+    if device.encrypted_password:
+        password = decrypt(device.encrypted_password)
+
+    use_tls = device.connection_type == ConnectionType.ftps
+    client_ip = get_client_ip(request)
+    device_label = f"{device.name} ({device.hostname}:{device.port})"
+
+    try:
+        session_id = await open_ftp_session(
+            hostname=device.hostname,
+            port=device.port,
+            username=device.username,
+            password=password,
+            use_tls=use_tls,
+            device_label=device_label,
+            cloudshell_user=current_user,
+            source_ip=client_ip,
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=401, detail=f"FTP authentication failed: {exc}")
+    except ConnectionRefusedError as exc:
+        raise HTTPException(status_code=502, detail=f"FTP connection refused: {exc}")
+    except (OSError, Exception) as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"FTP connection failed: {exc}")
+
+    await write_audit(
+        db,
+        current_user,
+        ACTION_SESSION_STARTED,
+        detail=f"Started FTP{'S' if use_tls else ''} session with {device_label}",
+        source_ip=client_ip,
+    )
+    return {"session_id": session_id}
+
+
+@router.delete("/session/{session_id}", status_code=204)
+async def close_session(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: str = Depends(get_current_user),
+):
+    """Close an FTP/FTPS session."""
+    device_label, audit_user, audit_ip = get_ftp_session_meta(session_id)
+    await close_ftp_session(session_id)
+    await write_audit(
+        db,
+        audit_user or current_user,
+        ACTION_SESSION_ENDED,
+        detail=(
+            f"Ended FTP session with {device_label}"
+            if device_label
+            else f"Ended FTP session (id={session_id[:8]})"
+        ),
+        source_ip=audit_ip,
+    )
+
+
+# ── File operations ───────────────────────────────────────────────────────────
+
+
+@router.get("/{session_id}/list")
+async def list_dir(
+    session_id: str,
+    path: str = "/",
+    _: str = Depends(get_current_user),
+):
+    """List directory contents at the given remote path."""
+    try:
+        entries = await list_directory(session_id, path)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Directory listing failed: {exc}")
+    return {"path": path, "entries": entries}
+
+
+@router.get("/{session_id}/download")
+async def download_file(
+    session_id: str,
+    path: str,
+    _: str = Depends(get_current_user),
+):
+    """Download a remote file.  ``path`` must be URL-encoded."""
+    remote_path = unquote(path)
+    filename = os.path.basename(remote_path)
+    try:
+        data = await read_file_bytes(session_id, remote_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Download failed: {exc}")
+
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+class UploadResponse(BaseModel):
+    """Response model for file upload."""
+
+    uploaded: str
+    size: int
+
+
+@router.post("/{session_id}/upload", response_model=UploadResponse)
+async def upload_file(
+    session_id: str,
+    path: str,
+    file: UploadFile = File(...),
+    _: str = Depends(get_current_user),
+):
+    """
+    Upload a file to the remote server.
+
+    ``path`` is the target directory; the remote file will be placed at
+    ``{path}/{file.filename}``.
+    """
+    target_dir = unquote(path)
+    if target_dir.endswith("/"):
+        remote_path = target_dir + (file.filename or "upload")
+    else:
+        remote_path = target_dir + "/" + (file.filename or "upload")
+
+    data = await file.read()
+    try:
+        await write_file_bytes(session_id, remote_path, data)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Upload failed: {exc}")
+
+    log.info(
+        "FTP uploaded %s bytes to %s (session %s)",
+        len(data),
+        remote_path,
+        session_id[:8],
+    )
+    return UploadResponse(uploaded=remote_path, size=len(data))
+
+
+class DeleteRequest(BaseModel):
+    """Request body for delete operation."""
+
+    path: str
+    is_dir: bool = False
+
+
+@router.post("/{session_id}/delete", status_code=204)
+async def delete_path(
+    session_id: str,
+    body: DeleteRequest,
+    _: str = Depends(get_current_user),
+):
+    """Delete a remote file or directory."""
+    try:
+        await delete_remote(session_id, body.path, body.is_dir)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Delete failed: {exc}")
+
+
+class RenameRequest(BaseModel):
+    """Request body for rename operation."""
+
+    old_path: str
+    new_path: str
+
+
+@router.post("/{session_id}/rename", status_code=204)
+async def rename_path(
+    session_id: str,
+    body: RenameRequest,
+    _: str = Depends(get_current_user),
+):
+    """Rename or move a remote path."""
+    try:
+        await rename_remote(session_id, body.old_path, body.new_path)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Rename failed: {exc}")
+
+
+class MkdirRequest(BaseModel):
+    """Request body for mkdir operation."""
+
+    path: str
+
+
+@router.post("/{session_id}/mkdir", status_code=204)
+async def make_directory(
+    session_id: str,
+    body: MkdirRequest,
+    _: str = Depends(get_current_user),
+):
+    """Create a remote directory."""
+    try:
+        await mkdir_remote(session_id, body.path)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Mkdir failed: {exc}")

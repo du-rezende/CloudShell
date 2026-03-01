@@ -52,9 +52,13 @@ jobs:
           echo "## Test Coverage Report" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
-          python -m coverage report --rcfile=pytest.ini 2>/dev/null \
-            || python -m coverage report 2>/dev/null \
-            || echo "Coverage data not available" >> "$GITHUB_STEP_SUMMARY"
+          if python -m coverage report --rcfile=pytest.ini >> "$GITHUB_STEP_SUMMARY" 2>/dev/null; then
+            :
+          elif python -m coverage report >> "$GITHUB_STEP_SUMMARY" 2>/dev/null; then
+            :
+          else
+            echo "Coverage data not available" >> "$GITHUB_STEP_SUMMARY"
+          fi
           echo '```' >> "$GITHUB_STEP_SUMMARY"
         env:
           COVERAGE_FILE: .coverage
@@ -99,7 +103,7 @@ jobs:
 
       - name: Publish test results check
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ env.GITHUB_TOKEN != '' }}
+        if: ${{ env.GH_PAT != '' }}
         with:
           files: reports/junit.xml
           check_name: "Unit Test Results (Python ${{ inputs.python-version }})"

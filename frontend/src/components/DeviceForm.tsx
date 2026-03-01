@@ -19,6 +19,14 @@ const EMPTY: DeviceCreate = {
   private_key: "",
 };
 
+/** Default port for each connection type. */
+const DEFAULT_PORT: Record<string, number> = {
+  ssh: 22,
+  sftp: 22,
+  ftp: 21,
+  ftps: 21,
+};
+
 export function DeviceForm({ device, onSave, onCancel }: Props) {
   const [form, setForm] = useState<DeviceCreate>(
     device
@@ -40,7 +48,17 @@ export function DeviceForm({ device, onSave, onCancel }: Props) {
   const fileInputRef                = useRef<HTMLInputElement>(null);
 
   const set = (key: keyof DeviceCreate, value: string | number) =>
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm((f) => {
+      const updated = { ...f, [key]: value };
+      // When switching connection type, auto-update port and force password auth for FTP/FTPS
+      if (key === "connection_type" && typeof value === "string") {
+        updated.port = DEFAULT_PORT[value] ?? f.port;
+        if (value === "ftp" || value === "ftps") {
+          updated.auth_type = "password";
+        }
+      }
+      return updated;
+    });
 
   const loadKeyFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -165,6 +183,8 @@ export function DeviceForm({ device, onSave, onCancel }: Props) {
             >
               <option value="ssh">SSH Terminal</option>
               <option value="sftp">File Manager (SFTP)</option>
+              <option value="ftp">File Manager (FTP)</option>
+              <option value="ftps">File Manager (FTPS)</option>
             </select>
           </Field>
 
@@ -172,13 +192,16 @@ export function DeviceForm({ device, onSave, onCancel }: Props) {
             <select
               className="input"
               value={form.auth_type}
+              disabled={form.connection_type === "ftp" || form.connection_type === "ftps"}
               onChange={(e) => {
                 set("auth_type", e.target.value);
                 setPublicKey(null);
               }}
             >
               <option value="password">Password</option>
-              <option value="key">SSH Key</option>
+              {form.connection_type !== "ftp" && form.connection_type !== "ftps" && (
+                <option value="key">SSH Key</option>
+              )}
             </select>
           </Field>
 
