@@ -44,7 +44,10 @@ CloudShell is designed with defense-in-depth for the sensitive data it handles:
 - **Configuration**: `SECRET_KEY` should be a random 32‑byte hex string
   (`openssl rand -hex 32`). Treat it like a master key; if it is leaked all
   encrypted data and sessions can be compromised.
-  
+
+>[!NOTE]
+> The PBKDF2 salt is static, so changing `SECRET_KEY` after credentials have been stored will make those entries undecryptable.  Treat `SECRET_KEY` as a master key and back up any encrypted data before rotating it.
+
 ### Summary
 
 | Concern | Mitigation |
@@ -53,5 +56,5 @@ CloudShell is designed with defense-in-depth for the sensitive data it handles:
 | SSH private keys | Encrypted `.enc` files, `chmod 600`, never stored in plaintext |
 | Web session | Short-lived JWT (HS256), revocation via DB deny-list, silent refresh |
 | Token in WebSocket | Passed as `?token=` query param on WS upgrade; use HTTPS/WSS in production |
-| Host key verification | `known_hosts` file persisted in `DATA_DIR`; accept-new policy |
+| Host key verification | `known_hosts` file persisted in `DATA_DIR`; accept-new policy (first connection is trusted) |
 | Admin password | bcrypt-hashed in DB after first change; env-var fallback on first boot only |
