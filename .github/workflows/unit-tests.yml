@@ -8,6 +8,10 @@ on:
         type: string
         default: "3.12"
 
+# ensure all steps that rely on the repository token use the personal access token
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
   unit-tests:
     name: Backend unit tests (pytest)
@@ -101,3 +105,4 @@ jobs:
           check_name: "Unit Test Results (Python ${{ inputs.python-version }})"
           comment_mode: always
           report_individual_runs: true
+          github_token: ${{ secrets.GH_PAT }}

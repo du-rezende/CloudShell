@@ -31,6 +31,10 @@ on:
         options: ["20", "22"]
         default: "20"
 
+# ensure the PAT is available to any child workflows
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
   unit-tests:
     name: Unit Tests

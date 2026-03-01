@@ -12,6 +12,10 @@ on:
         type: string
         default: "20"
 
+# ensure any built-in token references use the personal access token
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
   api-tests:
     name: Backend CRUD smoke tests
@@ -136,7 +140,7 @@ jobs:
           RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/devices/)
           echo "$RESP"
           echo "$RESP" | python3 -c "
-          import sys, json
+          import sys, json, os
           d = json.load(sys.stdin)
           assert d == [], f'Expected empty list, got {d}'
           print('✅ Empty device list OK')
