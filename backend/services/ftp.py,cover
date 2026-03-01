@@ -1,0 +1,266 @@
+> """
+> services/ftp.py — FTP/FTPS session manager using aioftp.
+  
+> Each session is identified by a UUID.  The session holds an open aioftp
+> Client connection.  Sessions are created via ``open_ftp_session`` and
+> closed via ``close_ftp_session``.
+  
+> Supported protocols:
+>   - ftp  : plain FTP (RFC 959)
+>   - ftps : explicit FTPS — connects in plain text, then sends AUTH TLS to
+>            upgrade (RFC 4217).  This is what virtually all real-world servers
+>            on port 21 expect.  aioftp's ``upgrade_to_tls()`` implements this
+>            via the ``AUTH TLS`` + ``PBSZ 0`` + ``PROT P`` command sequence.
+  
+>            Do NOT pass ssl= to the Client constructor for FTPS — that enables
+>            implicit TLS (wraps the control socket in TLS from the very first
+>            byte, typically port 990) and will cause a
+>            ``[SSL: WRONG_VERSION_NUMBER]`` error on standard port-21 servers.
+  
+> Note on encoding:
+>   Many FTP servers (especially older or non-English ones) send their banner
+>   and directory listings in ISO-8859-1 / Latin-1 rather than UTF-8.  aioftp
+>   defaults to UTF-8 and will raise a UnicodeDecodeError on those servers.
+>   We default to ``latin-1`` because it is a strict superset of ASCII and
+>   never raises a decode error (every byte 0x00–0xFF is valid Latin-1).
+> """
+> import logging
+> import ssl
+> import uuid
+> from dataclasses import dataclass, field
+  
+> import aioftp
+  
+> log = logging.getLogger(__name__)
+  
+  # ── Session store ─────────────────────────────────────────────────────────────
+  
+  
+> @dataclass
+> class _FtpSession:
+>     """Holds an active aioftp client and associated metadata."""
+  
+>     client: aioftp.Client
+>     device_label: str = ""
+>     cloudshell_user: str = ""
+>     source_ip: str | None = None
+>     use_tls: bool = False
+>     _cwd: str = field(default="/", init=False)
+  
+  
+> _ftp_sessions: dict[str, _FtpSession] = {}
+  
+  
+  # ── Helpers ───────────────────────────────────────────────────────────────────
+  
+  
+> def _make_ssl_context() -> ssl.SSLContext:
+>     """
+>     Return a permissive SSL context for FTPS connections.
+  
+>     Certificate verification is disabled so that self-signed certs on home /
+>     private FTP servers are accepted without error.
+>     """
+>     ctx = ssl.create_default_context()
+>     ctx.check_hostname = False
+>     ctx.verify_mode = ssl.CERT_NONE
+>     return ctx
+  
+  
+  # ── Public API ────────────────────────────────────────────────────────────────
+  
+  
+> async def open_ftp_session(
+>     hostname: str,
+>     port: int,
+>     username: str,
+>     password: str | None = None,
+>     use_tls: bool = False,
+>     device_label: str = "",
+>     cloudshell_user: str = "",
+>     source_ip: str | None = None,
+> ) -> str:
+>     """
+>     Open an FTP (or explicit-FTPS) connection and return a session_id.
+  
+>     For FTPS we connect in plain text first and then call ``upgrade_to_tls()``
+>     which sends ``AUTH TLS`` and upgrades both the control and data channels.
+>     This is the correct approach for the vast majority of FTPS servers on
+>     port 21 and avoids the ``[SSL: WRONG_VERSION_NUMBER]`` error that occurs
+>     when TLS is applied to the raw socket before any FTP greeting is received.
+  
+>     We use ``encoding="latin-1"`` so that servers whose banners / directory
+>     listings are in ISO-8859-1 (a common case for non-English servers) don't
+>     raise a ``UnicodeDecodeError``.  Latin-1 is a strict superset of ASCII
+>     and is always decodable without error.
+  
+>     Connection/auth errors propagate to the caller (the router handles them).
+>     """
+>     session_id = str(uuid.uuid4())
+  
+      # Always create a plain client — no ssl= here, even for FTPS.
+      # For FTPS, TLS is negotiated *after* the initial greeting via AUTH TLS.
+>     ftp_client = aioftp.Client(
+>         encoding="latin-1",
+>         connection_timeout=15,
+>     )
+  
+>     await ftp_client.connect(hostname, port)
+  
+>     if use_tls:
+          # Explicit FTPS: send AUTH TLS over the plain connection, then upgrade.
+>         ssl_ctx = _make_ssl_context()
+>         await ftp_client.upgrade_to_tls(sslcontext=ssl_ctx)
+  
+>     await ftp_client.login(username or "anonymous", password or "")
+  
+>     _ftp_sessions[session_id] = _FtpSession(
+>         client=ftp_client,
+>         device_label=device_label,
+>         cloudshell_user=cloudshell_user,
+>         source_ip=source_ip,
+>         use_tls=use_tls,
+>     )
+>     log.info(
+>         "FTP%s session %s opened -> %s@%s:%s",
+>         "S" if use_tls else "",
+>         session_id[:8],
+>         username,
+>         hostname,
+>         port,
+>     )
+>     return session_id
+  
+  
+> async def close_ftp_session(session_id: str) -> None:
+>     """Close the FTP connection and remove the session from the store."""
+>     entry = _ftp_sessions.pop(session_id, None)
+>     if entry:
+>         try:
+>             await entry.client.quit()
+>         except Exception:  # noqa: BLE001
+>             pass
+>         log.info("FTP session %s closed", session_id[:8])
+  
+  
+> def get_ftp_session(session_id: str) -> _FtpSession | None:
+>     """Return the session entry or None if not found."""
+>     return _ftp_sessions.get(session_id)
+  
+  
+> def get_ftp_session_meta(session_id: str) -> tuple[str, str, str | None]:
+>     """Return (device_label, cloudshell_user, source_ip)."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry:
+>         return entry.device_label, entry.cloudshell_user, entry.source_ip
+>     return "", "", None
+  
+  
+  # ── Filesystem helpers ────────────────────────────────────────────────────────
+  
+  
+> async def list_directory(session_id: str, remote_path: str) -> list[dict]:
+>     """
+>     List the contents of ``remote_path``.
+  
+>     Returns a list of dicts with keys:
+>       name, path, size, is_dir, permissions, modified
+>     """
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+  
+>     result = []
+>     async for path_obj, info in entry.client.list(remote_path, recursive=False):
+>         name = path_obj.name
+>         if name in (".", ".."):
+!             continue
+>         is_dir = info.get("type") == "dir"
+          # Build a clean joined path without double-slashes
+>         parent = remote_path.rstrip("/")
+>         full_path = f"{parent}/{name}" if parent else f"/{name}"
+>         size = int(info.get("size", 0) or 0)
+>         modify = info.get("modify", "")
+          # modify is a 14-char timestamp: YYYYMMDDHHMMSS
+>         modified_ts = _parse_ftp_mtime(modify)
+>         result.append(
+>             {
+>                 "name": name,
+>                 "path": full_path,
+>                 "size": size,
+>                 "is_dir": is_dir,
+>                 "permissions": info.get("unix.mode", None),
+>                 "modified": modified_ts,
+>             }
+>         )
+  
+>     result.sort(key=lambda x: (not x["is_dir"], x["name"].lower()))
+>     return result
+  
+  
+> def _parse_ftp_mtime(modify: str) -> int:
+>     """Convert an FTP MLSD modify timestamp (YYYYMMDDHHMMSS) to a Unix epoch int."""
+>     if not modify or len(modify) < 14:
+>         return 0
+>     try:
+>         from datetime import datetime, timezone
+>         dt = datetime(
+>             int(modify[0:4]),
+>             int(modify[4:6]),
+>             int(modify[6:8]),
+>             int(modify[8:10]),
+>             int(modify[10:12]),
+>             int(modify[12:14]),
+>             tzinfo=timezone.utc,
+>         )
+>         return int(dt.timestamp())
+>     except (ValueError, OverflowError):
+>         return 0
+  
+  
+> async def read_file_bytes(session_id: str, remote_path: str) -> bytes:
+>     """Download a remote file and return its raw bytes."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+>     chunks: list[bytes] = []
+>     async with entry.client.download_stream(remote_path) as stream:
+>         async for chunk in stream.iter_by_block():
+>             chunks.append(chunk)
+>     return b"".join(chunks)
+  
+  
+> async def write_file_bytes(session_id: str, remote_path: str, data: bytes) -> None:
+>     """Upload raw bytes to a remote file (overwrites if it exists)."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+>     async with entry.client.upload_stream(remote_path) as stream:
+>         await stream.write(data)
+  
+  
+> async def delete_remote(session_id: str, remote_path: str, is_dir: bool) -> None:
+>     """Delete a remote file or directory."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+>     if is_dir:
+>         await entry.client.remove_directory(remote_path)
+>     else:
+>         await entry.client.remove_file(remote_path)
+  
+  
+> async def rename_remote(session_id: str, old_path: str, new_path: str) -> None:
+>     """Rename/move a remote path."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+>     await entry.client.rename(old_path, new_path)
+  
+  
+> async def mkdir_remote(session_id: str, remote_path: str) -> None:
+>     """Create a remote directory."""
+>     entry = _ftp_sessions.get(session_id)
+>     if entry is None:
+>         raise ValueError("FTP session not found")
+>     await entry.client.make_directory(remote_path)
