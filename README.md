@@ -1,6 +1,6 @@
 # CloudShell
 
-> A self-hosted, Docker-deployable web SSH gateway: open your SSH sessions right in the browser, no client software required.
+> A self-hosted, Docker-deployable web SSH, SFTP and FTP(S) gateway: open your remote sessions right in the browser, no client software required.
 
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--v3-blue.svg)](https://github.com/iu2frl/CloudShell/blob/main/LICENSE)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-yellow.svg)](https://www.python.org/)
@@ -18,7 +18,7 @@ I really liked the idea behind some existing tools like [ShellNGN](https://shell
 
 ## Screenshots
 
-Supports both SSH and SFTP connections with (optional) split view:
+Supports SSH, SFTP and FTP(S) connections with (optional) split view:
 
 ![SSH Connection Screenshot](./images/main.png)
 
