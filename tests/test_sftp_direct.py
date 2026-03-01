@@ -418,8 +418,8 @@ async def test_open_session_direct_key_device_success_and_temp_file_deleted():
     assert len(deleted) == 1
 
 
-async def test_open_session_direct_permission_denied_returns_401():
-    """asyncssh.PermissionDenied maps to 401."""
+async def test_open_session_direct_permission_denied_returns_502():
+    """asyncssh.PermissionDenied maps to 502 (not 401, to avoid forcing logout)."""
     device = _password_device()
     with (
         patch("backend.routers.sftp.decrypt", return_value="pw"),
@@ -427,7 +427,7 @@ async def test_open_session_direct_permission_denied_returns_401():
     ):
         with pytest.raises(HTTPException) as exc_info:
             await open_session(1, _FakeRequest(), _FakeDB(device), "admin")
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == 502
 
 
 async def test_open_session_direct_connection_lost_returns_504():
