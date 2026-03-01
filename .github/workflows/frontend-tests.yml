@@ -8,6 +8,10 @@ on:
         type: string
         default: "20"
 
+# make sure any default token reference uses the GH_PAT env
+env:
+  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
 jobs:
   frontend-tests:
     name: Frontend unit tests (Vitest)
