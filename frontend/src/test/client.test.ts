@@ -189,3 +189,182 @@ describe('request (via login helper)', () => {
     await expect(listDevices()).rejects.toThrow('Validation error');
   });
 });
+
+// ── FTP / FTPS API functions ──────────────────────────────────────────────────
+
+describe('FTP API functions', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    localStorage.setItem('token', 'test-token');
+    vi.restoreAllMocks();
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  function mockFetch(body: unknown, status = 200) {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+      blob: async () => new Blob(['data']),
+      headers: new Headers({ 'Content-Disposition': 'attachment; filename="test.txt"' }),
+    }));
+  }
+
+  it('openFtpSession returns session_id', async () => {
+    const { openFtpSession } = await import('../api/client');
+    mockFetch({ session_id: 'ftp-sess-1' });
+    const id = await openFtpSession(42);
+    expect(id).toBe('ftp-sess-1');
+    expect((fetch as ReturnType<typeof vi.fn>).mock.calls[0][0]).toContain('/ftp/session/42');
+  });
+
+  it('closeFtpSession calls DELETE on the session endpoint', async () => {
+    const { closeFtpSession } = await import('../api/client');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      status: 204,
+      json: async () => undefined,
+    }));
+    await closeFtpSession('sess-abc');
+    const [url, opts] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toContain('/ftp/session/sess-abc');
+    expect((opts as RequestInit).method).toBe('DELETE');
+  });
+
+  it('ftpList encodes the path and returns entries', async () => {
+    const { ftpList } = await import('../api/client');
+    mockFetch({ path: '/some dir', entries: [] });
+    const res = await ftpList('sess-1', '/some dir');
+    expect(res.path).toBe('/some dir');
+    const url = (fetch as ReturnType<typeof vi.fn>).mock.calls[0][0] as string;
+    expect(url).toContain(encodeURIComponent('/some dir'));
+  });
+
+  it('ftpDownload triggers a file download on success', async () => {
+    const { ftpDownload } = await import('../api/client');
+    // Spy on anchor click behavior
+    const clickSpy = vi.fn();
+    const origCreate = document.createElement.bind(document);
+    vi.spyOn(document, 'createElement').mockImplementation((tag) => {
+      const el = origCreate(tag);
+      if (tag === 'a') {
+        Object.defineProperty(el, 'click', { value: clickSpy });
+      }
+      return el;
+    });
+    mockFetch({ /* blob stream */ });
+    await ftpDownload('sess-1', '/test.txt');
+    expect(clickSpy).toHaveBeenCalled();
+  });
+
+  it('ftpDownload throws on non-ok response', async () => {
+    const { ftpDownload } = await import('../api/client');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ detail: 'File not found' }),
+      headers: new Headers(),
+    }));
+    await expect(ftpDownload('sess-1', '/missing.txt')).rejects.toThrow('File not found');
+  });
+
+  it('ftpDelete sends a POST with path and is_dir', async () => {
+    const { ftpDelete } = await import('../api/client');
+    mockFetch({});
+    await ftpDelete('sess-1', '/old.txt', false);
+    const [url, opts] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toContain('/ftp/sess-1/delete');
+    const body = JSON.parse((opts as RequestInit).body as string);
+    expect(body).toEqual({ path: '/old.txt', is_dir: false });
+  });
+
+  it('ftpRename sends a POST with old_path and new_path', async () => {
+    const { ftpRename } = await import('../api/client');
+    mockFetch({});
+    await ftpRename('sess-1', '/old.txt', '/new.txt');
+    const [url, opts] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toContain('/ftp/sess-1/rename');
+    const body = JSON.parse((opts as RequestInit).body as string);
+    expect(body).toEqual({ old_path: '/old.txt', new_path: '/new.txt' });
+  });
+
+  it('ftpMkdir sends a POST with path', async () => {
+    const { ftpMkdir } = await import('../api/client');
+    mockFetch({});
+    await ftpMkdir('sess-1', '/newdir');
+    const [url, opts] = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(url).toContain('/ftp/sess-1/mkdir');
+    const body = JSON.parse((opts as RequestInit).body as string);
+    expect(body).toEqual({ path: '/newdir' });
+  });
+
+  it('ftpUpload resolves on XHR 200', async () => {
+    const { ftpUpload } = await import('../api/client');
+    const xhrMock = {
+      open: vi.fn(), setRequestHeader: vi.fn(), send: vi.fn(),
+      upload: { onprogress: null as unknown },
+      onload: null as unknown, onerror: null as unknown,
+      status: 200, responseText: '{}',
+    };
+    class FakeXHR { constructor() { return xhrMock as unknown as FakeXHR; } }
+    vi.stubGlobal('XMLHttpRequest', FakeXHR);
+    const file = new File(['content'], 'file.txt');
+    const promise = ftpUpload('sess-1', '/uploads', file);
+    (xhrMock.onload as () => void)();
+    await expect(promise).resolves.toBeUndefined();
+  });
+
+  it('ftpUpload rejects with error detail on XHR failure', async () => {
+    const { ftpUpload } = await import('../api/client');
+    const xhrMock = {
+      open: vi.fn(), setRequestHeader: vi.fn(), send: vi.fn(),
+      upload: { onprogress: null as unknown },
+      onload: null as unknown, onerror: null as unknown,
+      status: 500, responseText: '{"detail":"Upload failed"}',
+    };
+    class FakeXHR { constructor() { return xhrMock as unknown as FakeXHR; } }
+    vi.stubGlobal('XMLHttpRequest', FakeXHR);
+    const file = new File(['content'], 'file.txt');
+    const promise = ftpUpload('sess-1', '/uploads', file);
+    (xhrMock.onload as () => void)();
+    await expect(promise).rejects.toThrow('Upload failed');
+  });
+
+  it('ftpUpload rejects on network error', async () => {
+    const { ftpUpload } = await import('../api/client');
+    const xhrMock = {
+      open: vi.fn(), setRequestHeader: vi.fn(), send: vi.fn(),
+      upload: { onprogress: null as unknown },
+      onload: null as unknown, onerror: null as unknown,
+      status: 0, responseText: '',
+    };
+    class FakeXHR { constructor() { return xhrMock as unknown as FakeXHR; } }
+    vi.stubGlobal('XMLHttpRequest', FakeXHR);
+    const file = new File(['content'], 'file.txt');
+    const promise = ftpUpload('sess-1', '/uploads', file);
+    (xhrMock.onerror as () => void)();
+    await expect(promise).rejects.toThrow('Network error during upload');
+  });
+
+  it('ftpUpload calls onProgress callback', async () => {
+    const { ftpUpload } = await import('../api/client');
+    const xhrMock = {
+      open: vi.fn(), setRequestHeader: vi.fn(), send: vi.fn(),
+      upload: { onprogress: null as unknown },
+      onload: null as unknown, onerror: null as unknown,
+      status: 200, responseText: '{}',
+    };
+    class FakeXHR { constructor() { return xhrMock as unknown as FakeXHR; } }
+    vi.stubGlobal('XMLHttpRequest', FakeXHR);
+    const onProgress = vi.fn();
+    const file = new File(['content'], 'file.txt');
+    const promise = ftpUpload('sess-1', '/uploads', file, onProgress);
+    (xhrMock.upload.onprogress as (e: ProgressEvent) => void)(
+      { lengthComputable: true, loaded: 50, total: 100 } as ProgressEvent,
+    );
+    (xhrMock.onload as () => void)();
+    await promise;
+    expect(onProgress).toHaveBeenCalledWith(50);
+  });
+});

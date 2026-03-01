@@ -85,7 +85,7 @@ export function DeviceList({
                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
               >
-                {d.connection_type === "sftp"
+                {d.connection_type === "sftp" || d.connection_type === "ftp" || d.connection_type === "ftps"
                   ? <FolderOpen size={14} />
                   : <Monitor size={14} />
                 }
@@ -169,6 +169,16 @@ export function DeviceList({
                         {d.connection_type === "sftp" && (
                           <span className="text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded px-1 leading-4 flex-shrink-0">
                             SFTP
+                          </span>
+                        )}
+                        {d.connection_type === "ftp" && (
+                          <span className="text-[9px] bg-orange-900/60 text-orange-300 border border-orange-700/50 rounded px-1 leading-4 flex-shrink-0">
+                            FTP
+                          </span>
+                        )}
+                        {d.connection_type === "ftps" && (
+                          <span className="text-[9px] bg-orange-900/60 text-orange-300 border border-orange-700/50 rounded px-1 leading-4 flex-shrink-0">
+                            FTPS
                           </span>
                         )}
                       </div>
