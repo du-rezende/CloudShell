@@ -179,7 +179,7 @@ async def test_open_sftp_session_device_not_found(auth_client):
 
 @pytest.mark.asyncio
 async def test_open_sftp_session_auth_failure(auth_client):
-    """SSH PermissionDenied maps to 401."""
+    """SSH PermissionDenied maps to 502 (not 401, to avoid forcing logout)."""
     resp = await auth_client.post("/api/devices/", json=_sftp_device_payload())
     device_id = resp.json()["id"]
 
@@ -193,7 +193,7 @@ async def test_open_sftp_session_auth_failure(auth_client):
         ),
     ):
         r = await auth_client.post(f"/api/sftp/session/{device_id}")
-    assert r.status_code == 401
+    assert r.status_code == 502
 
 
 @pytest.mark.asyncio

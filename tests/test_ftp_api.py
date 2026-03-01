@@ -471,8 +471,8 @@ async def test_device_ftps_connection_type_persisted(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_open_ftp_session_permission_error_returns_401(auth_client):
-    """PermissionError (wrong credentials) must map to HTTP 401."""
+async def test_open_ftp_session_permission_error_returns_502(auth_client):
+    """PermissionError (wrong credentials) must map to HTTP 502 (not 401, to avoid forcing logout)."""
     resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
     device_id = resp.json()["id"]
 
@@ -486,7 +486,7 @@ async def test_open_ftp_session_permission_error_returns_401(auth_client):
         ),
     ):
         resp = await auth_client.post(f"/api/ftp/session/{device_id}")
-    assert resp.status_code == 401
+    assert resp.status_code == 502
     assert "authentication failed" in resp.json()["detail"].lower()
 
 
