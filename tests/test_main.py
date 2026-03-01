@@ -6,8 +6,11 @@ Covers:
 - uptime_seconds is a non-negative integer
 - Global exception handler catches unhandled errors and returns 500
 - BOOT_ID is a non-empty UUID string
+- lifespan: startup creates directories, initialises DB, prunes audit entries, logs; shutdown logs
 """
+import tempfile
 import uuid
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -90,3 +93,65 @@ def test_boot_id_is_valid_uuid():
     assert BOOT_ID
     # Should not raise
     uuid.UUID(BOOT_ID)
+
+
+# ── lifespan ──────────────────────────────────────────────────────────────────
+
+async def test_lifespan_creates_directories_and_runs_startup():
+    """lifespan startup must create data/keys dirs, call init_db, and prune audit entries."""
+    from backend.main import lifespan, app
+
+    with tempfile.TemporaryDirectory() as tmp:
+        data_dir = f"{tmp}/data"
+        keys_dir = f"{tmp}/keys"
+
+        mock_settings = MagicMock()
+        mock_settings.data_dir = data_dir
+        mock_settings.keys_dir = keys_dir
+        mock_settings.audit_retention_days = 90
+
+        with patch("backend.main.get_settings", return_value=mock_settings), \
+             patch("backend.main.init_db", new_callable=AsyncMock) as mock_init_db, \
+             patch("backend.database.AsyncSessionLocal") as mock_session_cls, \
+             patch("backend.services.audit.prune_old_entries", new_callable=AsyncMock) as mock_prune:
+
+            # AsyncSessionLocal is used as an async context manager
+            mock_db = AsyncMock()
+            mock_session_cls.return_value.__aenter__ = AsyncMock(return_value=mock_db)
+            mock_session_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            async with lifespan(app):
+                # Inside the lifespan context = startup has completed
+                import os
+                assert os.path.isdir(data_dir)
+                assert os.path.isdir(keys_dir)
+                mock_init_db.assert_awaited_once()
+                mock_prune.assert_awaited_once_with(mock_db, 90)
+            # After exiting = shutdown has completed (no error means log ran)
+
+
+async def test_lifespan_shutdown_logs(caplog):
+    """lifespan shutdown must log the shutting-down message."""
+    import logging
+    from backend.main import lifespan, app
+
+    with tempfile.TemporaryDirectory() as tmp:
+        mock_settings = MagicMock()
+        mock_settings.data_dir = f"{tmp}/data"
+        mock_settings.keys_dir = f"{tmp}/keys"
+        mock_settings.audit_retention_days = 30
+
+        with patch("backend.main.get_settings", return_value=mock_settings), \
+             patch("backend.main.init_db", new_callable=AsyncMock), \
+             patch("backend.database.AsyncSessionLocal") as mock_session_cls, \
+             patch("backend.services.audit.prune_old_entries", new_callable=AsyncMock):
+
+            mock_db = AsyncMock()
+            mock_session_cls.return_value.__aenter__ = AsyncMock(return_value=mock_db)
+            mock_session_cls.return_value.__aexit__ = AsyncMock(return_value=False)
+
+            with caplog.at_level(logging.INFO, logger="backend.main"):
+                async with lifespan(app):
+                    pass
+
+        assert any("shutting down" in record.message for record in caplog.records)
