@@ -160,6 +160,18 @@ async def test_close_ftp_session_unknown_is_noop():
     await close_ftp_session("non-existent-id")
 
 
+@pytest.mark.asyncio
+async def test_close_ftp_session_quit_exception_is_swallowed():
+    """quit() raising must NOT propagate — the session must still be removed."""
+    fake = _make_fake_client()
+    fake.quit = AsyncMock(side_effect=OSError("server closed connection"))
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake):
+        sid = await open_ftp_session("host", 21, "u", "p")
+    assert sid in ftp_service._ftp_sessions
+    await close_ftp_session(sid)          # must not raise
+    assert sid not in ftp_service._ftp_sessions
+
+
 # ── Session metadata helpers ──────────────────────────────────────────────────
 
 
@@ -230,6 +242,11 @@ def test_parse_ftp_mtime_short():
 
 def test_parse_ftp_mtime_invalid():
     assert _parse_ftp_mtime("XXXXXXXXXXXXXX") == 0
+
+
+def test_parse_ftp_mtime_overflow():
+    """Month 99 triggers a ValueError inside datetime() → returns 0."""
+    assert _parse_ftp_mtime("20249901000000") == 0
 
 
 # ── read_file_bytes ───────────────────────────────────────────────────────────

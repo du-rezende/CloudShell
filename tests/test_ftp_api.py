@@ -465,3 +465,263 @@ async def test_device_ftps_connection_type_persisted(auth_client):
     assert resp.status_code == 201
     device = resp.json()
     assert device["connection_type"] == "ftps"
+
+
+# ── Session open: specific exception branches ─────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_permission_error_returns_401(auth_client):
+    """PermissionError (wrong credentials) must map to HTTP 401."""
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    with patch(
+        "backend.services.ftp.aioftp.Client",
+        return_value=MagicMock(
+            connect=AsyncMock(side_effect=PermissionError("Login incorrect")),
+            login=AsyncMock(),
+            quit=AsyncMock(),
+            upgrade_to_tls=AsyncMock(),
+        ),
+    ):
+        resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    assert resp.status_code == 401
+    assert "authentication failed" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_connection_refused_returns_502(auth_client):
+    """ConnectionRefusedError must map to HTTP 502."""
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    with patch(
+        "backend.services.ftp.aioftp.Client",
+        return_value=MagicMock(
+            connect=AsyncMock(side_effect=ConnectionRefusedError("Connection refused")),
+            login=AsyncMock(),
+            quit=AsyncMock(),
+            upgrade_to_tls=AsyncMock(),
+        ),
+    ):
+        resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    assert resp.status_code == 502
+    assert "refused" in resp.json()["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_close_session_unknown_id_uses_fallback_audit_message(auth_client, db_session):
+    """Closing an unknown session_id should still write an audit entry using
+    the fallback 'id=…' format rather than a device label."""
+    from sqlalchemy import select
+    from backend.models.audit import AuditLog
+    from backend.services.audit import ACTION_SESSION_ENDED
+
+    resp = await auth_client.delete("/api/ftp/session/unknown-session-id")
+    assert resp.status_code == 204
+
+    result = await db_session.execute(
+        select(AuditLog).where(AuditLog.action == ACTION_SESSION_ENDED)
+    )
+    entry = result.scalars().first()
+    assert entry is not None
+    assert "unknown-" in (entry.detail or "")
+
+
+# ── File operation 500 error paths ────────────────────────────────────────────
+
+async def _open_session(auth_client, fake_client) -> str:
+    """Helper: create a device and open a session with the given fake client."""
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    return open_resp.json()["session_id"]
+
+
+@pytest.mark.asyncio
+async def test_list_dir_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.list_directory", side_effect=RuntimeError("boom")):
+        resp = await auth_client.get(f"/api/ftp/{sid}/list?path=/")
+    assert resp.status_code == 500
+    assert "Directory listing failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_download_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.read_file_bytes", side_effect=RuntimeError("boom")):
+        resp = await auth_client.get(f"/api/ftp/{sid}/download?path=%2Ftest.txt")
+    assert resp.status_code == 500
+    assert "Download failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_upload_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.write_file_bytes", side_effect=RuntimeError("boom")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/upload?path=/",
+            files={"file": ("f.txt", io.BytesIO(b"data"), "text/plain")},
+        )
+    assert resp.status_code == 500
+    assert "Upload failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_upload_with_trailing_slash_path(auth_client):
+    """When path ends with '/', the remote path must be path + filename."""
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    resp = await auth_client.post(
+        f"/api/ftp/{sid}/upload?path=%2Fsome%2Fdir%2F",
+        files={"file": ("hello.txt", io.BytesIO(b"data"), "text/plain")},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["uploaded"] == "/some/dir/hello.txt"
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_delete_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.delete_remote", side_effect=RuntimeError("boom")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/delete", json={"path": "/x.txt", "is_dir": False}
+        )
+    assert resp.status_code == 500
+    assert "Delete failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_rename_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.rename_remote", side_effect=RuntimeError("boom")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/rename", json={"old_path": "/a.txt", "new_path": "/b.txt"}
+        )
+    assert resp.status_code == 500
+    assert "Rename failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_mkdir_generic_error_returns_500(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.mkdir_remote", side_effect=RuntimeError("boom")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/mkdir", json={"path": "/newdir"}
+        )
+    assert resp.status_code == 500
+    assert "Mkdir failed" in resp.json()["detail"]
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+# ── File operation ValueError (404) paths ─────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_list_dir_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.list_directory", side_effect=ValueError("no such path")):
+        resp = await auth_client.get(f"/api/ftp/{sid}/list?path=/missing")
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_download_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.read_file_bytes", side_effect=ValueError("no such file")):
+        resp = await auth_client.get(f"/api/ftp/{sid}/download?path=%2Fmissing.txt")
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_upload_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.write_file_bytes", side_effect=ValueError("no such dir")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/upload?path=/missing",
+            files={"file": ("f.txt", io.BytesIO(b"d"), "text/plain")},
+        )
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_delete_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.delete_remote", side_effect=ValueError("no such file")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/delete", json={"path": "/missing.txt", "is_dir": False}
+        )
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_rename_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.rename_remote", side_effect=ValueError("no such file")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/rename", json={"old_path": "/missing.txt", "new_path": "/x.txt"}
+        )
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")
+
+
+@pytest.mark.asyncio
+async def test_mkdir_value_error_returns_404(auth_client):
+    fake = _make_fake_ftp_client()
+    sid = await _open_session(auth_client, fake)
+
+    with patch("backend.routers.ftp.mkdir_remote", side_effect=ValueError("no such parent")):
+        resp = await auth_client.post(
+            f"/api/ftp/{sid}/mkdir", json={"path": "/missing/newdir"}
+        )
+    assert resp.status_code == 404
+
+    await auth_client.delete(f"/api/ftp/session/{sid}")

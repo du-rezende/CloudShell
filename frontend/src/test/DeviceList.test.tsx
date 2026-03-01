@@ -111,6 +111,16 @@ describe('DeviceList — device rows', () => {
     expect(screen.getByText('SFTP')).toBeInTheDocument();
   });
 
+  it('shows FTP badge for ftp connection type', () => {
+    setup({ devices: [makeDevice({ connection_type: 'ftp' })] });
+    expect(screen.getByText('FTP')).toBeInTheDocument();
+  });
+
+  it('shows FTPS badge for ftps connection type', () => {
+    setup({ devices: [makeDevice({ connection_type: 'ftps' })] });
+    expect(screen.getByText('FTPS')).toBeInTheDocument();
+  });
+
   it('shows SSH key icon for key auth type', () => {
     setup({ devices: [makeDevice({ auth_type: 'key' })] });
     expect(screen.getByLabelText('SSH key')).toBeInTheDocument();
@@ -176,6 +186,16 @@ describe('DeviceList — collapsed mode', () => {
     expect(screen.queryByText('My Server')).not.toBeInTheDocument();
     // But a button with the device title should exist
     expect(screen.getByTitle('My Server')).toBeInTheDocument();
+  });
+
+  it('renders FolderOpen icon button for ftp device in collapsed mode', () => {
+    setup({ collapsed: true, devices: [makeDevice({ connection_type: 'ftp', name: 'ftp-box' })] });
+    expect(screen.getByTitle('ftp-box')).toBeInTheDocument();
+  });
+
+  it('renders FolderOpen icon button for ftps device in collapsed mode', () => {
+    setup({ collapsed: true, devices: [makeDevice({ connection_type: 'ftps', name: 'ftps-box' })] });
+    expect(screen.getByTitle('ftps-box')).toBeInTheDocument();
   });
 
   it('calls onConnect when an icon button is clicked in collapsed mode', async () => {
