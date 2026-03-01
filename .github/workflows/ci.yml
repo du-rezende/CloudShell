@@ -31,32 +31,34 @@ on:
         options: ["20", "22"]
         default: "20"
 
-# ensure the PAT is available to any child workflows
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 jobs:
   unit-tests:
     name: Unit Tests
     uses: ./.github/workflows/unit-tests.yml
-    secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
 
   frontend-tests:
     name: Frontend Tests
     uses: ./.github/workflows/frontend-tests.yml
-    secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       node-version: ${{ inputs.node-version || '20' }}
 
   integration-tests:
     name: Integration Tests
     uses: ./.github/workflows/api-tests.yml
-    secrets:
-      GH_PAT: ${{ secrets.GH_PAT }}
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
     with:
       python-version: ${{ inputs.python-version || '3.12' }}
       node-version: ${{ inputs.node-version || '20' }}

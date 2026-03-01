@@ -3,10 +3,6 @@ name: Docker Build (reusable)
 on:
   workflow_call:
 
-# use the personal access token for any actions that rely on a repo token
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 jobs:
   docker-build:
     name: Build Docker images and smoke-test stack

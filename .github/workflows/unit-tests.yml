@@ -7,15 +7,6 @@ on:
         description: Python version to use
         type: string
         default: "3.12"
-    secrets:
-      GH_PAT:
-        description: Personal access token for publishing test results
-        required: false
-
-# ensure all steps that rely on the repository token use the personal access token
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-  GH_PAT: ${{ secrets.GH_PAT }}
 
 jobs:
   unit-tests:
@@ -104,10 +95,10 @@ jobs:
 
       - name: Publish test results check (PR only)
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: ${{ env.GH_PAT != '' && github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           files: reports/junit.xml
           check_name: "Unit Test Results (Python ${{ inputs.python-version }})"
           comment_mode: always
           report_individual_runs: true
-          github_token: ${{ secrets.GH_PAT }}
+          github_token: ${{ github.token }}

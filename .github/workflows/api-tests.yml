@@ -11,15 +11,6 @@ on:
         description: Node.js version to use
         type: string
         default: "20"
-    secrets:
-      GH_PAT:
-        description: Personal access token for publishing test results
-        required: false
-
-# ensure any built-in token references use the personal access token
-env:
-  GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-  GH_PAT: ${{ secrets.GH_PAT }}
 
 jobs:
   api-tests:
