@@ -110,24 +110,32 @@ function setup() {
   return { onLogout };
 }
 
+async function setupAsync() {
+  const result = setup();
+  // Wait for the initial listDevices promise to settle so all state updates
+  // triggered by useEffect are flushed inside act() before assertions run.
+  await waitFor(() => expect(document.querySelector('header')).toBeInTheDocument());
+  return result;
+}
+
 beforeEach(() => vi.clearAllMocks());
 
 // ── Header structure ──────────────────────────────────────────────────────────
 
 describe('Dashboard header — structure', () => {
-  it('renders the <header> element', () => {
-    setup();
+  it('renders the <header> element', async () => {
+    await setupAsync();
     expect(document.querySelector('header')).toBeInTheDocument();
   });
 
-  it('header has flex-wrap class for mobile two-row reflow', () => {
-    setup();
+  it('header has flex-wrap class for mobile two-row reflow', async () => {
+    await setupAsync();
     const header = document.querySelector('header')!;
     expect(header.className).toContain('flex-wrap');
   });
 
-  it('header has sm:flex-nowrap class to restore single row on wider screens', () => {
-    setup();
+  it('header has sm:flex-nowrap class to restore single row on wider screens', async () => {
+    await setupAsync();
     const header = document.querySelector('header')!;
     expect(header.className).toContain('sm:flex-nowrap');
   });
@@ -136,15 +144,15 @@ describe('Dashboard header — structure', () => {
 // ── Logo group ────────────────────────────────────────────────────────────────
 
 describe('Dashboard header — logo group', () => {
-  it('is rendered inside the header', () => {
-    setup();
+  it('is rendered inside the header', async () => {
+    await setupAsync();
     const header = document.querySelector('header')!;
     // The CloudShell icon and text are both inside the header
     expect(within(header).getByText('CloudShell by IU2FRL')).toBeInTheDocument();
   });
 
-  it('logo group has order-1 so it is first in both rows', () => {
-    setup();
+  it('logo group has order-1 so it is first in both rows', async () => {
+    await setupAsync();
     const header = document.querySelector('header')!;
     const logoGroup = within(header).getByText('CloudShell by IU2FRL').closest('div')!;
     expect(logoGroup.className).toContain('order-1');
@@ -154,37 +162,37 @@ describe('Dashboard header — logo group', () => {
 // ── Actions group (row 1 on mobile) ───────────────────────────────────────────
 
 describe('Dashboard header — actions group', () => {
-  it('contains the audit log button', () => {
-    setup();
+  it('contains the audit log button', async () => {
+    await setupAsync();
     expect(screen.getByTitle('Audit log')).toBeInTheDocument();
   });
 
-  it('contains the change password button', () => {
-    setup();
+  it('contains the change password button', async () => {
+    await setupAsync();
     expect(screen.getByTitle('Change password')).toBeInTheDocument();
   });
 
-  it('contains the sign out button', () => {
-    setup();
+  it('contains the sign out button', async () => {
+    await setupAsync();
     expect(screen.getByTitle('Sign out')).toBeInTheDocument();
   });
 
-  it('actions group has order-2 (row 1 on mobile, right-hand side)', () => {
-    setup();
+  it('actions group has order-2 (row 1 on mobile, right-hand side)', async () => {
+    await setupAsync();
     const signOutBtn = screen.getByTitle('Sign out');
     const actionsGroup = signOutBtn.closest('div')!;
     expect(actionsGroup.className).toContain('order-2');
   });
 
-  it('actions group has ml-auto to push it to the right edge on mobile', () => {
-    setup();
+  it('actions group has ml-auto to push it to the right edge on mobile', async () => {
+    await setupAsync();
     const signOutBtn = screen.getByTitle('Sign out');
     const actionsGroup = signOutBtn.closest('div')!;
     expect(actionsGroup.className).toContain('ml-auto');
   });
 
-  it('actions group has sm:ml-0 to remove the auto-margin on wider screens', () => {
-    setup();
+  it('actions group has sm:ml-0 to remove the auto-margin on wider screens', async () => {
+    await setupAsync();
     const signOutBtn = screen.getByTitle('Sign out');
     const actionsGroup = signOutBtn.closest('div')!;
     expect(actionsGroup.className).toContain('sm:ml-0');
@@ -195,50 +203,44 @@ describe('Dashboard header — actions group', () => {
 
 describe('Dashboard header — tab strip', () => {
   it('tab strip container has order-3 (second row on mobile)', async () => {
-    setup();
-    // Wait for the initial listDevices promise to settle
-    await waitFor(() => expect(document.querySelector('[class*="order-3"]')).toBeInTheDocument());
+    await setupAsync();
     const tabStrip = document.querySelector('[class*="order-3"]')!;
     expect(tabStrip.className).toContain('order-3');
   });
 
   it('tab strip container has w-full to span the full width on mobile', async () => {
-    setup();
-    await waitFor(() => expect(document.querySelector('[class*="order-3"]')).toBeInTheDocument());
+    await setupAsync();
     const tabStrip = document.querySelector('[class*="order-3"]')!;
     expect(tabStrip.className).toContain('w-full');
   });
 
   it('tab strip container has sm:w-auto so it shrinks back on wider screens', async () => {
-    setup();
-    await waitFor(() => expect(document.querySelector('[class*="order-3"]')).toBeInTheDocument());
+    await setupAsync();
     const tabStrip = document.querySelector('[class*="order-3"]')!;
     expect(tabStrip.className).toContain('sm:w-auto');
   });
 
   it('tab strip container has sm:order-2 to restore inline position on wider screens', async () => {
-    setup();
-    await waitFor(() => expect(document.querySelector('[class*="order-3"]')).toBeInTheDocument());
+    await setupAsync();
     const tabStrip = document.querySelector('[class*="order-3"]')!;
     expect(tabStrip.className).toContain('sm:order-2');
   });
 
   it('tab strip is empty when no connections are open', async () => {
-    setup();
-    await waitFor(() => expect(document.querySelector('[class*="order-3"]')).toBeInTheDocument());
+    await setupAsync();
     const tabStrip = document.querySelector('[class*="order-3"]')!;
     expect(tabStrip.children).toHaveLength(0);
   });
 
   it('shows a tab chip when a device is connected', async () => {
-    setup();
+    await setupAsync();
     await userEvent.click(screen.getByTestId('connect-device-1'));
     await waitFor(() => screen.getByText('Server Alpha'));
     expect(screen.getByText('Server Alpha')).toBeInTheDocument();
   });
 
   it('shows multiple tab chips when multiple devices are connected', async () => {
-    setup();
+    await setupAsync();
     await userEvent.click(screen.getByTestId('connect-device-1'));
     await userEvent.click(screen.getByTestId('connect-device-2'));
     await waitFor(() => screen.getByText('Server Beta'));
@@ -247,7 +249,7 @@ describe('Dashboard header — tab strip', () => {
   });
 
   it('removes the tab chip when the close button is clicked', async () => {
-    setup();
+    await setupAsync();
     await userEvent.click(screen.getByTestId('connect-device-1'));
     await waitFor(() => screen.getByText('Server Alpha'));
 
@@ -261,7 +263,7 @@ describe('Dashboard header — tab strip', () => {
   });
 
   it('does not remove other tabs when one is closed', async () => {
-    setup();
+    await setupAsync();
     await userEvent.click(screen.getByTestId('connect-device-1'));
     await userEvent.click(screen.getByTestId('connect-device-2'));
     await waitFor(() => screen.getByText('Server Beta'));
@@ -281,7 +283,7 @@ describe('Dashboard header — tab strip', () => {
 
 describe('Dashboard header — sign out', () => {
   it('calls onLogout when the sign out button is clicked', async () => {
-    const { onLogout } = setup();
+    const { onLogout } = await setupAsync();
     await userEvent.click(screen.getByTitle('Sign out'));
     await waitFor(() => expect(onLogout).toHaveBeenCalledTimes(1));
   });
