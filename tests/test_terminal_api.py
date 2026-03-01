@@ -83,8 +83,8 @@ async def test_open_session_ssh_connection_error_returns_502(auth_client):
     assert resp.status_code == 502
 
 
-async def test_open_session_ssh_auth_failure_returns_401(auth_client):
-    """An asyncssh.PermissionDenied must be mapped to HTTP 401."""
+async def test_open_session_ssh_auth_failure_returns_502(auth_client):
+    """An asyncssh.PermissionDenied must be mapped to HTTP 502 (not 401, to avoid forcing logout)."""
     create_resp = await auth_client.post("/api/devices/", json=_password_device_payload())
     device_id = create_resp.json()["id"]
 
@@ -93,7 +93,7 @@ async def test_open_session_ssh_auth_failure_returns_401(auth_client):
         new=AsyncMock(side_effect=asyncssh.PermissionDenied(reason="Bad password")),
     ):
         resp = await auth_client.post(f"/api/terminal/session/{device_id}")
-    assert resp.status_code == 401
+    assert resp.status_code == 502
 
 
 async def test_open_session_ssh_generic_error_returns_502(auth_client):

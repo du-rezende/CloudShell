@@ -88,7 +88,7 @@ async def open_session(
             source_ip=client_ip,
         )
     except PermissionError as exc:
-        raise HTTPException(status_code=401, detail=f"FTP authentication failed: {exc}")
+        raise HTTPException(status_code=502, detail=f"FTP authentication failed: {exc}")
     except ConnectionRefusedError as exc:
         raise HTTPException(status_code=502, detail=f"FTP connection refused: {exc}")
     except (OSError, Exception) as exc:  # noqa: BLE001
