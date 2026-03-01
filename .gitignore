@@ -377,3 +377,4 @@ frontend/dist/
 ### OTHERS ###
 *_smoke.sh
 reports/*
+junit.xml
