@@ -135,8 +135,8 @@ async def test_open_session_no_encrypted_password():
     assert kwargs.get("password") is None
 
 
-async def test_open_session_permission_error_raises_401():
-    """open_session raises 401 when the FTP service raises PermissionError."""
+async def test_open_session_permission_error_raises_502():
+    """open_session raises 502 (not 401) when the FTP service raises PermissionError, to avoid forcing logout."""
     dev = _make_device()
     db = _FakeDB(device=dev)
 
@@ -146,7 +146,7 @@ async def test_open_session_permission_error_raises_401():
         with pytest.raises(HTTPException) as exc_info:
             await open_session(device_id=1, request=_FakeRequest(), db=db, current_user="admin")
 
-    assert exc_info.value.status_code == 401
+    assert exc_info.value.status_code == 502
     assert "authentication failed" in exc_info.value.detail.lower()
 
 
