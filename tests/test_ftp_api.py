@@ -1,0 +1,467 @@
+"""
+tests/test_ftp_api.py — integration tests for the FTP/FTPS file manager API.
+
+Tests cover:
+- POST /api/ftp/session/{device_id}
+  - requires authentication
+  - returns 404 for unknown device
+  - returns 400 for non-FTP device
+  - auth failure -> 401 / connection failure -> 502
+  - success: returns session_id and writes audit entry
+- DELETE /api/ftp/session/{session_id}
+  - requires authentication
+  - closes session and writes SESSION_ENDED audit entry
+- GET /api/ftp/{session_id}/list
+  - requires authentication
+  - returns 404 for unknown session
+  - returns directory listing
+- GET /api/ftp/{session_id}/download
+  - requires authentication
+  - streams file content
+- POST /api/ftp/{session_id}/upload
+  - requires authentication
+  - saves file and returns metadata
+- POST /api/ftp/{session_id}/delete
+  - requires authentication
+  - calls delete on FTP service
+- POST /api/ftp/{session_id}/rename
+  - requires authentication
+  - calls rename on FTP service
+- POST /api/ftp/{session_id}/mkdir
+  - requires authentication
+  - calls mkdir on FTP service
+- FTPS connection type is accepted
+"""
+import io
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from sqlalchemy import select
+
+from backend.models.audit import AuditLog
+from backend.services.audit import ACTION_SESSION_ENDED, ACTION_SESSION_STARTED
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+
+def _ftp_device_payload(**overrides) -> dict:
+    return {
+        "name": "ftp-server",
+        "hostname": "192.168.1.30",
+        "port": 21,
+        "username": "ftpuser",
+        "auth_type": "password",
+        "connection_type": "ftp",
+        "password": "s3cr3t",
+        **overrides,
+    }
+
+
+def _ssh_device_payload(**overrides) -> dict:
+    return {
+        "name": "ssh-server",
+        "hostname": "192.168.1.10",
+        "port": 22,
+        "username": "root",
+        "auth_type": "password",
+        "connection_type": "ssh",
+        "password": "s3cr3t",
+        **overrides,
+    }
+
+
+def _make_fake_ftp_client() -> MagicMock:
+    """Return a minimal aioftp Client mock that covers all tested operations."""
+    client = MagicMock()
+
+    # connect / login / quit are coroutines
+    client.connect = AsyncMock()
+    client.login = AsyncMock()
+    client.quit = AsyncMock()
+
+    # list() yields (path, info) tuples — simulate a single file entry
+    async def _fake_list(path, recursive=False):
+        from pathlib import PurePosixPath
+        yield PurePosixPath("/test.txt"), {
+            "type": "file",
+            "size": "42",
+            "modify": "20240101120000",
+        }
+
+    client.list = _fake_list
+
+    # download_stream / upload_stream are async context managers
+    fake_dl_stream = MagicMock()
+    fake_dl_stream.__aenter__ = AsyncMock(return_value=fake_dl_stream)
+    fake_dl_stream.__aexit__ = AsyncMock(return_value=False)
+
+    async def _iter_by_block():
+        yield b"hello ftp"
+
+    fake_dl_stream.iter_by_block = _iter_by_block
+    client.download_stream = MagicMock(return_value=fake_dl_stream)
+
+    fake_ul_stream = MagicMock()
+    fake_ul_stream.__aenter__ = AsyncMock(return_value=fake_ul_stream)
+    fake_ul_stream.__aexit__ = AsyncMock(return_value=False)
+    fake_ul_stream.write = AsyncMock()
+    client.upload_stream = MagicMock(return_value=fake_ul_stream)
+
+    client.remove_file = AsyncMock()
+    client.remove_directory = AsyncMock()
+    client.rename = AsyncMock()
+    client.make_directory = AsyncMock()
+    client.upgrade_to_tls = AsyncMock()
+
+    return client
+
+
+# ── Session open ──────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_requires_auth(client):
+    resp = await client.post("/api/ftp/session/1")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_device_not_found(auth_client):
+    resp = await auth_client.post("/api/ftp/session/9999")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_wrong_connection_type(auth_client):
+    """A device with connection_type='ssh' must return 400 when opened as FTP."""
+    resp = await auth_client.post("/api/devices/", json=_ssh_device_payload())
+    assert resp.status_code == 201
+    device_id = resp.json()["id"]
+
+    resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    assert resp.status_code == 400
+    assert "not configured as FTP" in resp.json()["detail"]
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_connection_error(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    assert resp.status_code == 201
+    device_id = resp.json()["id"]
+
+    with patch(
+        "backend.services.ftp.aioftp.Client",
+        return_value=MagicMock(
+            connect=AsyncMock(side_effect=OSError("Connection refused")),
+            login=AsyncMock(),
+            quit=AsyncMock(),
+        ),
+    ):
+        resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    assert resp.status_code == 502
+
+
+@pytest.mark.asyncio
+async def test_open_ftp_session_success_writes_audit(auth_client, db_session):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    assert resp.status_code == 201
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "session_id" in data
+    session_id = data["session_id"]
+
+    # Audit entry must exist
+    result = await db_session.execute(
+        select(AuditLog).where(AuditLog.action == ACTION_SESSION_STARTED)
+    )
+    entries = result.scalars().all()
+    assert any("FTP" in (e.detail or "") for e in entries)
+
+    # Cleanup
+    with patch("backend.services.ftp._ftp_sessions", {}):
+        pass
+    return session_id
+
+
+@pytest.mark.asyncio
+async def test_open_ftps_session_success(auth_client):
+    payload = _ftp_device_payload(connection_type="ftps", port=21)
+    resp = await auth_client.post("/api/devices/", json=payload)
+    assert resp.status_code == 201
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+
+    assert resp.status_code == 200
+    assert "session_id" in resp.json()
+
+
+# ── Session close ─────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_close_ftp_session_requires_auth(client):
+    resp = await client.delete("/api/ftp/session/abc-123")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_close_ftp_session_success_writes_audit(auth_client, db_session):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.delete(f"/api/ftp/session/{session_id}")
+    assert resp.status_code == 204
+
+    result = await db_session.execute(
+        select(AuditLog).where(AuditLog.action == ACTION_SESSION_ENDED)
+    )
+    assert result.scalars().first() is not None
+
+
+# ── Directory listing ─────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_list_dir_requires_auth(client):
+    resp = await client.get("/api/ftp/abc-123/list")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_list_dir_unknown_session(auth_client):
+    resp = await auth_client.get("/api/ftp/no-such-session/list?path=/")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_list_dir_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.get(f"/api/ftp/{session_id}/list?path=/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "entries" in data
+    assert any(e["name"] == "test.txt" for e in data["entries"])
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Download ──────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_download_requires_auth(client):
+    resp = await client.get("/api/ftp/abc-123/download?path=/test.txt")
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_download_unknown_session(auth_client):
+    resp = await auth_client.get("/api/ftp/no-such-session/download?path=%2Ftest.txt")
+    assert resp.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_download_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.get(
+        f"/api/ftp/{session_id}/download?path=%2Ftest.txt"
+    )
+    assert resp.status_code == 200
+    assert resp.content == b"hello ftp"
+    assert "attachment" in resp.headers.get("content-disposition", "")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Upload ────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_upload_requires_auth(client):
+    resp = await client.post(
+        "/api/ftp/abc-123/upload?path=/",
+        files={"file": ("hello.txt", io.BytesIO(b"data"), "text/plain")},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_upload_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.post(
+        f"/api/ftp/{session_id}/upload?path=/",
+        files={"file": ("hello.txt", io.BytesIO(b"uploaded data"), "text/plain")},
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["uploaded"].endswith("hello.txt")
+    assert data["size"] == len(b"uploaded data")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Delete ────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_delete_requires_auth(client):
+    resp = await client.post(
+        "/api/ftp/abc-123/delete", json={"path": "/test.txt", "is_dir": False}
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_delete_file_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.post(
+        f"/api/ftp/{session_id}/delete",
+        json={"path": "/test.txt", "is_dir": False},
+    )
+    assert resp.status_code == 204
+    fake_client.remove_file.assert_awaited_once_with("/test.txt")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+@pytest.mark.asyncio
+async def test_delete_dir_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.post(
+        f"/api/ftp/{session_id}/delete",
+        json={"path": "/mydir", "is_dir": True},
+    )
+    assert resp.status_code == 204
+    fake_client.remove_directory.assert_awaited_once_with("/mydir")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Rename ────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_rename_requires_auth(client):
+    resp = await client.post(
+        "/api/ftp/abc-123/rename",
+        json={"old_path": "/a.txt", "new_path": "/b.txt"},
+    )
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_rename_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.post(
+        f"/api/ftp/{session_id}/rename",
+        json={"old_path": "/a.txt", "new_path": "/b.txt"},
+    )
+    assert resp.status_code == 204
+    fake_client.rename.assert_awaited_once_with("/a.txt", "/b.txt")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Mkdir ─────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.asyncio
+async def test_mkdir_requires_auth(client):
+    resp = await client.post("/api/ftp/abc-123/mkdir", json={"path": "/newdir"})
+    assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_mkdir_success(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    device_id = resp.json()["id"]
+
+    fake_client = _make_fake_ftp_client()
+    with patch("backend.services.ftp.aioftp.Client", return_value=fake_client):
+        open_resp = await auth_client.post(f"/api/ftp/session/{device_id}")
+    session_id = open_resp.json()["session_id"]
+
+    resp = await auth_client.post(
+        f"/api/ftp/{session_id}/mkdir", json={"path": "/newdir"}
+    )
+    assert resp.status_code == 204
+    fake_client.make_directory.assert_awaited_once_with("/newdir")
+
+    await auth_client.delete(f"/api/ftp/session/{session_id}")
+
+
+# ── Device CRUD: ftp / ftps connection types persisted ───────────────────────
+
+
+@pytest.mark.asyncio
+async def test_device_ftp_connection_type_persisted(auth_client):
+    resp = await auth_client.post("/api/devices/", json=_ftp_device_payload())
+    assert resp.status_code == 201
+    device = resp.json()
+    assert device["connection_type"] == "ftp"
+
+
+@pytest.mark.asyncio
+async def test_device_ftps_connection_type_persisted(auth_client):
+    payload = _ftp_device_payload(connection_type="ftps", name="ftps-server")
+    resp = await auth_client.post("/api/devices/", json=payload)
+    assert resp.status_code == 201
+    device = resp.json()
+    assert device["connection_type"] == "ftps"

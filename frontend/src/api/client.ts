@@ -122,7 +122,7 @@ export async function changePassword(
 
 // ── Devices ───────────────────────────────────────────────────────────────────
 
-export type ConnectionType = "ssh" | "sftp";
+export type ConnectionType = "ssh" | "sftp" | "ftp" | "ftps";
 
 export interface Device {
   id: number;
@@ -316,6 +316,118 @@ export async function sftpRename(
 
 export async function sftpMkdir(sessionId: string, path: string): Promise<void> {
   await request<void>(`/sftp/${sessionId}/mkdir`, {
+    method: "POST",
+    body: JSON.stringify({ path }),
+  });
+}
+
+// ── FTP / FTPS ────────────────────────────────────────────────────────────────
+
+export async function openFtpSession(deviceId: number): Promise<string> {
+  const data = await request<{ session_id: string }>(`/ftp/session/${deviceId}`, {
+    method: "POST",
+  });
+  return data.session_id;
+}
+
+export async function closeFtpSession(sessionId: string): Promise<void> {
+  await request<void>(`/ftp/session/${sessionId}`, { method: "DELETE" });
+}
+
+export async function ftpList(sessionId: string, path: string): Promise<SftpListResponse> {
+  const encoded = encodeURIComponent(path);
+  return request<SftpListResponse>(`/ftp/${sessionId}/list?path=${encoded}`);
+}
+
+export async function ftpDownload(sessionId: string, path: string): Promise<void> {
+  const token = localStorage.getItem("token") ?? "";
+  const encoded = encodeURIComponent(path);
+  const res = await fetch(`${BASE}/ftp/${sessionId}/download?path=${encoded}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Download failed");
+  }
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const match = disposition.match(/filename="([^"]+)"/);
+  const filename = match ? match[1] : path.split("/").pop() ?? "download";
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+export async function ftpUpload(
+  sessionId: string,
+  remotePath: string,
+  file: File,
+  onProgress?: (pct: number) => void,
+): Promise<void> {
+  const token = localStorage.getItem("token") ?? "";
+  const encoded = encodeURIComponent(remotePath);
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${BASE}/ftp/${sessionId}/upload?path=${encoded}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+    if (onProgress) {
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+      };
+    }
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve();
+      } else {
+        try {
+          const err = JSON.parse(xhr.responseText);
+          reject(new Error(err.detail ?? "Upload failed"));
+        } catch {
+          reject(new Error("Upload failed"));
+        }
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+
+    const form = new FormData();
+    form.append("file", file);
+    xhr.send(form);
+  });
+}
+
+export async function ftpDelete(
+  sessionId: string,
+  path: string,
+  isDir: boolean,
+): Promise<void> {
+  await request<void>(`/ftp/${sessionId}/delete`, {
+    method: "POST",
+    body: JSON.stringify({ path, is_dir: isDir }),
+  });
+}
+
+export async function ftpRename(
+  sessionId: string,
+  oldPath: string,
+  newPath: string,
+): Promise<void> {
+  await request<void>(`/ftp/${sessionId}/rename`, {
+    method: "POST",
+    body: JSON.stringify({ old_path: oldPath, new_path: newPath }),
+  });
+}
+
+export async function ftpMkdir(sessionId: string, path: string): Promise<void> {
+  await request<void>(`/ftp/${sessionId}/mkdir`, {
     method: "POST",
     body: JSON.stringify({ path }),
   });
