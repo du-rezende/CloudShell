@@ -117,6 +117,13 @@ export function Dashboard({ onLogout }: Props) {
     const tab: Tab = { device: d, key: ++tabCounter };
     setTabs((prev) => [...prev, tab]);
     setActiveTab(tab.key);
+    // Focus the cell where the tab will land: first empty cell, or the
+    // currently focused cell if all are occupied.
+    let targetCell = grid.focusedCell;
+    for (const [idx, v] of grid.assignments) {
+      if (v === null) { targetCell = idx; break; }
+    }
+    grid.setFocusedCell(targetCell);
     grid.autoPlace(tab.key);
   };
 
