@@ -329,7 +329,7 @@ Made changes.
 
 
 ```
-Now update the `# ── Tests` section at the bottom of the Makefile: 
+Now update the `# -- Tests` section at the bottom of the Makefile: 
 ```
 
 

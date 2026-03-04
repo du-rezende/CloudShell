@@ -33,7 +33,7 @@ from backend.routers.ftp import (
 from backend.services.ftp import list_directory
 
 
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeRequest:
     def __init__(self):
@@ -70,7 +70,7 @@ def _make_device(connection_type: ConnectionType = ConnectionType.ftp,
     return dev
 
 
-# ── open_session ──────────────────────────────────────────────────────────────
+# -- open_session --------------------------------------------------------------
 
 async def test_open_session_device_not_found():
     """open_session raises 404 when the device_id is not in the DB."""
@@ -223,7 +223,7 @@ async def test_open_session_writes_ftps_audit_label():
     assert "FTPS" in detail
 
 
-# ── services/ftp.py — list_directory sort (line 177) ─────────────────────────
+# -- services/ftp.py — list_directory sort (line 177) -------------------------
 
 async def test_list_directory_sort_dirs_before_files():
     """list_directory returns directories before files, sorted by name, and skips dot entries."""

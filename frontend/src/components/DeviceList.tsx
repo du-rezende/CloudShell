@@ -57,7 +57,7 @@ export function DeviceList({
         ${collapsed ? "w-12" : "w-64"}`}
     >
       {collapsed ? (
-        /* ── Collapsed: icon-only strip ── */
+        /* -- Collapsed: icon-only strip -- */
         <div className="flex flex-col items-center gap-2 py-3">
           <button
             onClick={onToggleCollapse}
@@ -94,7 +94,7 @@ export function DeviceList({
           </div>
         </div>
       ) : (
-        /* ── Expanded: full sidebar ── */
+        /* -- Expanded: full sidebar -- */
         <>
           {/* Header */}
           <div className="px-4 py-3.5 border-b border-slate-700 flex items-center justify-between">

@@ -33,7 +33,7 @@ import aioftp
 
 log = logging.getLogger(__name__)
 
-# ── Session store ─────────────────────────────────────────────────────────────
+# -- Session store -------------------------------------------------------------
 
 
 @dataclass
@@ -51,7 +51,7 @@ class _FtpSession:
 _ftp_sessions: dict[str, _FtpSession] = {}
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 
 def _make_ssl_context() -> ssl.SSLContext:
@@ -67,7 +67,7 @@ def _make_ssl_context() -> ssl.SSLContext:
     return ctx
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# -- Public API ----------------------------------------------------------------
 
 
 async def open_ftp_session(
@@ -156,7 +156,7 @@ def get_ftp_session_meta(session_id: str) -> tuple[str, str, str | None]:
     return "", "", None
 
 
-# ── Filesystem helpers ────────────────────────────────────────────────────────
+# -- Filesystem helpers --------------------------------------------------------
 
 
 async def list_directory(session_id: str, remote_path: str) -> list[dict]:

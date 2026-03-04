@@ -51,7 +51,7 @@ def _make_websocket(recv_messages: list | None = None) -> MagicMock:
     return ws
 
 
-# ── _ws_error ─────────────────────────────────────────────────────────────────
+# -- _ws_error -----------------------------------------------------------------
 
 async def test_ws_error_sends_ansi_message():
     """_ws_error must send an ANSI-formatted error message as bytes."""
@@ -75,7 +75,7 @@ async def test_ws_error_swallows_send_exception():
     await _ws_error(ws, "something bad happened")
 
 
-# ── get_session_meta ──────────────────────────────────────────────────────────
+# -- get_session_meta ----------------------------------------------------------
 
 def test_get_session_meta_returns_stored_values():
     """get_session_meta must return the stored device_label, user, and IP."""
@@ -104,7 +104,7 @@ def test_get_session_meta_unknown_session_returns_empty():
     assert ip is None
 
 
-# ── close_session ─────────────────────────────────────────────────────────────
+# -- close_session -------------------------------------------------------------
 
 async def test_close_session_removes_entry():
     """close_session must remove the session from the store and close the connection."""
@@ -137,7 +137,7 @@ async def test_close_session_swallows_conn_close_error():
     assert sid not in _sessions
 
 
-# ── stream_session: unknown session ───────────────────────────────────────────
+# -- stream_session: unknown session -------------------------------------------
 
 async def test_stream_session_unknown_session_sends_error_and_closes():
     """stream_session with an unknown session_id must send an error and close with 4004."""
@@ -152,7 +152,7 @@ async def test_stream_session_unknown_session_sends_error_and_closes():
     ws.close.assert_called_once_with(code=4004)
 
 
-# ── stream_session: create_process raises asyncssh.Error ─────────────────────
+# -- stream_session: create_process raises asyncssh.Error ---------------------
 
 async def test_stream_session_create_process_error_closes_4011():
     """If create_process raises asyncssh.Error the WS must be closed with code 4011."""
@@ -177,7 +177,7 @@ async def test_stream_session_create_process_error_closes_4011():
     ws.close.assert_called_with(code=4011)
 
 
-# ── stream_session: resize frame processing ───────────────────────────────────
+# -- stream_session: resize frame processing -----------------------------------
 
 async def test_stream_session_uses_resize_dimensions():
     """A resize frame received before PTY creation must set the PTY dimensions."""
@@ -221,7 +221,7 @@ async def test_stream_session_uses_resize_dimensions():
     assert kwargs["term_size"] == (120, 40)
 
 
-# ── stream_session: text frame fallback ──────────────────────────────────────
+# -- stream_session: text frame fallback --------------------------------------
 
 async def test_stream_session_initial_timeout_uses_defaults():
     """When the initial resize frame times out, fallback dimensions are used."""
@@ -264,7 +264,7 @@ async def test_stream_session_initial_timeout_uses_defaults():
     assert kwargs["term_size"] == (220, 50)  # default fallback
 
 
-# ── stream_session: str chunk encoding ───────────────────────────────────────
+# -- stream_session: str chunk encoding ---------------------------------------
 
 async def test_stream_session_str_chunks_encoded_to_bytes():
     """ssh_to_ws must encode str chunks from the SSH process to bytes."""
@@ -307,7 +307,7 @@ async def test_stream_session_str_chunks_encoded_to_bytes():
     assert any(isinstance(c, bytes) for c in calls)
 
 
-# ── create_session ────────────────────────────────────────────────────────────
+# -- create_session ------------------------------------------------------------
 
 async def test_create_session_with_password_stores_metadata():
     """create_session must store device_label and cloudshell_user in the session."""

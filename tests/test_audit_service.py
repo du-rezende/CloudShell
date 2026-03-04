@@ -32,7 +32,7 @@ from backend.services.audit import (
 )
 
 
-# ── write_audit ───────────────────────────────────────────────────────────────
+# -- write_audit ---------------------------------------------------------------
 
 async def test_write_audit_persists_all_fields(db_session):
     """write_audit inserts a row with the correct username, action, detail, and IP."""
@@ -93,7 +93,7 @@ async def test_write_audit_swallows_db_errors():
     await write_audit(broken_db, "eve", ACTION_LOGIN)
 
 
-# ── prune_old_entries ─────────────────────────────────────────────────────────
+# -- prune_old_entries ---------------------------------------------------------
 
 async def test_prune_removes_old_entries(db_session):
     """prune_old_entries deletes entries older than retention_days."""
@@ -144,7 +144,7 @@ async def test_prune_returns_correct_count(db_session):
     assert deleted == 5
 
 
-# ── get_client_ip ─────────────────────────────────────────────────────────────
+# -- get_client_ip -------------------------------------------------------------
 
 def _make_request(headers: dict, client_host: str | None = None):
     """Build a minimal mock of a FastAPI Request with the given headers."""

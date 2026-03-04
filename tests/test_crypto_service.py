@@ -30,7 +30,7 @@ from backend.services.crypto import (
 )
 
 
-# ── encrypt / decrypt ─────────────────────────────────────────────────────────
+# -- encrypt / decrypt ---------------------------------------------------------
 
 def test_encrypt_decrypt_roundtrip():
     """Decrypting an encrypted string must return the original plaintext."""
@@ -79,7 +79,7 @@ def test_encrypt_unicode_string():
     assert decrypt(encrypt(plaintext)) == plaintext
 
 
-# ── save / load / delete key file ─────────────────────────────────────────────
+# -- save / load / delete key file ---------------------------------------------
 
 def test_save_and_load_key_file():
     """save_encrypted_key followed by load_decrypted_key must return the original PEM."""
@@ -137,7 +137,7 @@ def test_delete_key_file_missing_is_noop():
         delete_key_file("nonexistent_file.enc", keys_dir)
 
 
-# ── generate_key_pair ─────────────────────────────────────────────────────────
+# -- generate_key_pair ---------------------------------------------------------
 
 def test_generate_key_pair_returns_strings():
     """generate_key_pair must return two non-empty strings."""

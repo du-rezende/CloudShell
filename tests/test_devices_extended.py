@@ -17,7 +17,7 @@ import pytest
 from backend.services.crypto import generate_key_pair
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _password_payload(**kw) -> dict:
     return {
@@ -43,7 +43,7 @@ def _key_payload(pem: str, **kw) -> dict:
     }
 
 
-# ── PUT — update password on a password-type device ──────────────────────────
+# -- PUT — update password on a password-type device --------------------------
 
 async def test_update_device_password(auth_client):
     """PUT /api/devices/{id} with a new password must accept and store it."""
@@ -73,7 +73,7 @@ async def test_update_device_username(auth_client):
     assert resp.json()["username"] == "newuser"
 
 
-# ── PUT — update private key on a key-type device ────────────────────────────
+# -- PUT — update private key on a key-type device ----------------------------
 
 async def test_update_device_private_key(auth_client):
     """PUT /api/devices/{id} with a new private_key must accept and store it."""
@@ -94,7 +94,7 @@ async def test_update_device_private_key(auth_client):
     assert resp.json()["key_filename"] is not None
 
 
-# ── DELETE — key file cleanup ─────────────────────────────────────────────────
+# -- DELETE — key file cleanup -------------------------------------------------
 
 async def test_delete_key_device_removes_key_file(auth_client):
     """Deleting a key-based device must also delete the encrypted key file from disk."""
@@ -136,7 +136,7 @@ async def test_delete_password_device_no_key_file(auth_client):
     assert resp.status_code == 204
 
 
-# ── auth_type update ──────────────────────────────────────────────────────────
+# -- auth_type update ----------------------------------------------------------
 
 async def test_update_device_auth_type(auth_client):
     """PUT /api/devices/{id} can change the auth_type field."""

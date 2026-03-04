@@ -41,7 +41,7 @@ def _derive_key() -> bytes:
     return key
 
 
-# ── Core encrypt / decrypt ────────────────────────────────────────────────────
+# -- Core encrypt / decrypt ----------------------------------------------------
 
 def encrypt(plaintext: str) -> str:
     """Encrypt a UTF-8 string; returns base64-encoded nonce+ciphertext."""
@@ -69,7 +69,7 @@ def _decrypt_bytes(token: str) -> bytes:
     return aesgcm.decrypt(nonce, ct, None)
 
 
-# ── SSH key file helpers ──────────────────────────────────────────────────────
+# -- SSH key file helpers ------------------------------------------------------
 
 def save_encrypted_key(device_id: int, pem: str, keys_dir: str) -> str:
     """
@@ -109,7 +109,7 @@ def delete_key_file(filename: str, keys_dir: str) -> None:
         pass
 
 
-# ── Key pair generation ───────────────────────────────────────────────────────
+# -- Key pair generation -------------------------------------------------------
 
 def generate_key_pair() -> tuple[str, str]:
     """

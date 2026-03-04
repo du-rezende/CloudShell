@@ -2,7 +2,7 @@
 routers/sftp.py — REST endpoints for SFTP file manager sessions.
 
 Session lifecycle
-─────────────────
+-----------------
 POST /sftp/session/{device_id}   → open SFTP session, returns session_id
 GET  /sftp/{session_id}/list     → list directory contents
 GET  /sftp/{session_id}/download → download a file
@@ -49,7 +49,7 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/sftp", tags=["sftp"])
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 async def _resolve_device_credentials(
     device: Device,
@@ -83,7 +83,7 @@ async def _resolve_device_credentials(
     return password, key_path, tmp_key_file
 
 
-# ── Session management ────────────────────────────────────────────────────────
+# -- Session management --------------------------------------------------------
 
 @router.post("/session/{device_id}")
 async def open_session(
@@ -159,7 +159,7 @@ async def close_session(
     )
 
 
-# ── File operations ───────────────────────────────────────────────────────────
+# -- File operations -----------------------------------------------------------
 
 @router.get("/{session_id}/list")
 async def list_dir(

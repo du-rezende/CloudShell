@@ -15,14 +15,14 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from backend.database import _run_migrations, _MIGRATIONS
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 async def _make_engine():
     """Return an in-memory async SQLite engine."""
     return create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
 
 
-# ── Tests ─────────────────────────────────────────────────────────────────────
+# -- Tests ---------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_migration_adds_missing_column():

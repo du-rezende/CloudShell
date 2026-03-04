@@ -33,7 +33,7 @@ Tests cover:
 from datetime import datetime, timezone
 
 
-# ── POST /api/auth/token ──────────────────────────────────────────────────────
+# -- POST /api/auth/token ------------------------------------------------------
 
 async def test_login_returns_token(client):
     """Valid credentials must return a bearer token."""
@@ -106,7 +106,7 @@ async def test_login_empty_credentials(client):
     assert resp.status_code in (401, 422)
 
 
-# ── POST /api/auth/refresh ────────────────────────────────────────────────────
+# -- POST /api/auth/refresh ----------------------------------------------------
 
 async def test_refresh_returns_new_token(auth_client):
     """A valid token can be refreshed and the new token is different."""
@@ -156,7 +156,7 @@ async def test_refresh_without_token(client):
     assert resp.status_code == 401
 
 
-# ── POST /api/auth/logout ─────────────────────────────────────────────────────
+# -- POST /api/auth/logout -----------------------------------------------------
 
 async def test_logout_returns_204(auth_client):
     """Successful logout returns HTTP 204."""
@@ -191,7 +191,7 @@ async def test_logout_without_token_returns_401(client):
     assert resp.status_code == 401
 
 
-# ── GET /api/auth/me ──────────────────────────────────────────────────────────
+# -- GET /api/auth/me ----------------------------------------------------------
 
 async def test_me_returns_username(auth_client):
     """GET /api/auth/me must return the correct username."""
@@ -238,7 +238,7 @@ async def test_me_after_logout_returns_401(client):
     assert resp.status_code == 401
 
 
-# ── POST /api/auth/change-password ───────────────────────────────────────────
+# -- POST /api/auth/change-password -------------------------------------------
 
 async def test_change_password_success(auth_client):
     """A valid password change returns 204."""

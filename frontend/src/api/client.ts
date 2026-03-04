@@ -1,6 +1,6 @@
 const BASE = "/api";
 
-// ── Token helpers ─────────────────────────────────────────────────────────────
+// -- Token helpers -------------------------------------------------------------
 
 /** Decode the JWT payload without verifying the signature (client-side only). */
 function _decodePayload(token: string): Record<string, unknown> | null {
@@ -33,7 +33,7 @@ function authHeaders(): HeadersInit {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// ── Core fetch wrapper ────────────────────────────────────────────────────────
+// -- Core fetch wrapper --------------------------------------------------------
 
 /** Called by the 401 interceptor — clears state and fires a global event. */
 function _forceLogout(): void {
@@ -63,7 +63,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+// -- Auth ----------------------------------------------------------------------
 
 export async function login(username: string, password: string): Promise<void> {
   const form = new URLSearchParams({ username, password });
@@ -120,7 +120,7 @@ export async function changePassword(
   });
 }
 
-// ── Devices ───────────────────────────────────────────────────────────────────
+// -- Devices -------------------------------------------------------------------
 
 export type ConnectionType = "ssh" | "sftp" | "ftp" | "ftps";
 
@@ -159,7 +159,7 @@ export const updateDevice = (id: number, d: Partial<DeviceCreate>): Promise<Devi
 export const deleteDevice = (id: number): Promise<void> =>
   request(`/devices/${id}`, { method: "DELETE" });
 
-// ── Terminal ──────────────────────────────────────────────────────────────────
+// -- Terminal ------------------------------------------------------------------
 
 export async function openSession(deviceId: number): Promise<string> {
   const data = await request<{ session_id: string }>(`/terminal/session/${deviceId}`, {
@@ -174,7 +174,7 @@ export function terminalWsUrl(sessionId: string): string {
   return `${proto}://${window.location.host}/api/terminal/ws/${sessionId}?token=${token}`;
 }
 
-// ── Audit ─────────────────────────────────────────────────────────────────────
+// -- Audit ---------------------------------------------------------------------
 
 export interface AuditLogEntry {
   id: number;
@@ -195,7 +195,7 @@ export interface AuditLogPage {
 export const listAuditLogs = (page = 1, pageSize = 50): Promise<AuditLogPage> =>
   request(`/audit/logs?page=${page}&page_size=${pageSize}`);
 
-// ── SFTP ──────────────────────────────────────────────────────────────────────
+// -- SFTP ----------------------------------------------------------------------
 
 export interface SftpEntry {
   name: string;
@@ -321,7 +321,7 @@ export async function sftpMkdir(sessionId: string, path: string): Promise<void> 
   });
 }
 
-// ── FTP / FTPS ────────────────────────────────────────────────────────────────
+// -- FTP / FTPS ----------------------------------------------------------------
 
 export async function openFtpSession(deviceId: number): Promise<string> {
   const data = await request<{ session_id: string }>(`/ftp/session/${deviceId}`, {
@@ -433,7 +433,7 @@ export async function ftpMkdir(sessionId: string, path: string): Promise<void> {
   });
 }
 
-// ── Config transfer ───────────────────────────────────────────────────────────
+// -- Config transfer -----------------------------------------------------------
 
 export interface ImportResult {
   imported: number;

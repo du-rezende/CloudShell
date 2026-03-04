@@ -1141,11 +1141,11 @@ Made changes.
 The pipeline now looks like this:
 
 ```
-test  ──────────────────────────────────────────────────┐
+test  --------------------------------------------------┐
                                                          ↓
-                                               build-amd64 ──┐
-                                                              ├── merge → GHCR
-                                               build-arm64 ──┘
+                                               build-amd64 --┐
+                                                              ├-- merge → GHCR
+                                               build-arm64 --┘
 ```
 
 Both build jobs declare `needs: [test]`, so they only start — and run in parallel — after all integration tests pass. If any test fails the release is aborted and nothing is pushed to GHCR.
@@ -1416,13 +1416,13 @@ This is a standard monorepo pattern. The structure would be:
 
 ```
 CloudShell/
-├── Dockerfile.backend       # Python/FastAPI only
-├── Dockerfile.frontend      # Nginx serving the React build + reverse proxy
-├── docker-compose.yml       # orchestrates both
-├── nginx/
-│   └── default.conf         # proxy /api → backend:8000, serve / from static
-├── backend/
-└── frontend/
+├-- Dockerfile.backend       # Python/FastAPI only
+├-- Dockerfile.frontend      # Nginx serving the React build + reverse proxy
+├-- docker-compose.yml       # orchestrates both
+├-- nginx/
+│   └-- default.conf         # proxy /api → backend:8000, serve / from static
+├-- backend/
+└-- frontend/
 ```
 
 GHCR supports multiple images from one repo — just use different names:
@@ -2244,7 +2244,7 @@ GitHub Copilot: Let me check the current compose and release workflow to get the
 ```yaml
 services:
 
-  # ── Backend: FastAPI + AsyncSSH ─────────────────────────────────────────────
+  # -- Backend: FastAPI + AsyncSSH ---------------------------------------------
   backend:
     image: ghcr.io/iu2frl/cloudshell-backend:latest
     restart: unless-stopped
@@ -2267,7 +2267,7 @@ services:
     networks:
       - internal
 
-  # ── Frontend: Nginx + React bundle + reverse proxy ──────────────────────────
+  # -- Frontend: Nginx + React bundle + reverse proxy --------------------------
   frontend:
     image: ghcr.io/iu2frl/cloudshell-frontend:latest
     restart: unless-stopped
@@ -3184,7 +3184,7 @@ app = FastAPI(
 async def health():
     return {
         "status": "ok",
-        "version": VERSION,   # <── this
+        "version": VERSION,   # <-- this
         "uptime_seconds": ...,
     }
 ```

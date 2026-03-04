@@ -20,7 +20,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act, fireEvent } from '@testing-library/react';
 import { SessionBadge } from '../components/SessionBadge';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 const FROZEN_NOW = new Date('2026-01-01T12:00:00.000Z').getTime();
 
@@ -61,7 +61,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-// ── Rendering ─────────────────────────────────────────────────────────────────
+// -- Rendering -----------------------------------------------------------------
 
 describe('SessionBadge — rendering', () => {
   it('renders a button element with the clock icon trigger', () => {
@@ -100,7 +100,7 @@ describe('SessionBadge — rendering', () => {
   });
 });
 
-// ── Colour coding ─────────────────────────────────────────────────────────────
+// -- Colour coding -------------------------------------------------------------
 
 describe('SessionBadge — colour classes', () => {
   it('applies the default slate colour when > 30 min remain (no urgency)', () => {
@@ -123,7 +123,7 @@ describe('SessionBadge — colour classes', () => {
   });
 });
 
-// ── Popover visibility ────────────────────────────────────────────────────────
+// -- Popover visibility --------------------------------------------------------
 
 describe('SessionBadge — popover', () => {
   it('popover is not rendered initially', () => {
@@ -174,7 +174,7 @@ describe('SessionBadge — popover', () => {
   });
 });
 
-// ── Popover content ───────────────────────────────────────────────────────────
+// -- Popover content -----------------------------------------------------------
 
 describe('SessionBadge — popover content', () => {
   beforeEach(() => {
@@ -222,7 +222,7 @@ describe('SessionBadge — popover content', () => {
   });
 });
 
-// ── Live countdown update ─────────────────────────────────────────────────────
+// -- Live countdown update -----------------------------------------------------
 
 describe('SessionBadge — live countdown', () => {
   it('updates the displayed time inside the popover as the clock advances', () => {

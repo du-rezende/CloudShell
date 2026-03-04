@@ -24,7 +24,7 @@ import { Dashboard } from '../pages/Dashboard';
 import { ToastProvider } from '../components/Toast';
 import type { Device } from '../api/client';
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// -- Mocks ---------------------------------------------------------------------
 
 // Stub every heavy component / API so the test can mount Dashboard cheaply.
 vi.mock('../api/client', async (importOriginal) => {
@@ -98,7 +98,7 @@ vi.mock('../components/DeviceForm',       () => ({ DeviceForm: () => null }));
 vi.mock('../components/ChangePasswordModal', () => ({ ChangePasswordModal: () => null }));
 vi.mock('../components/AuditLogModal',    () => ({ AuditLogModal: () => null }));
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 function setup() {
   const onLogout = vi.fn();
@@ -120,7 +120,7 @@ async function setupAsync() {
 
 beforeEach(() => vi.clearAllMocks());
 
-// ── Header structure ──────────────────────────────────────────────────────────
+// -- Header structure ----------------------------------------------------------
 
 describe('Dashboard header — structure', () => {
   it('renders the <header> element', async () => {
@@ -141,7 +141,7 @@ describe('Dashboard header — structure', () => {
   });
 });
 
-// ── Logo group ────────────────────────────────────────────────────────────────
+// -- Logo group ----------------------------------------------------------------
 
 describe('Dashboard header — logo group', () => {
   it('is rendered inside the header', async () => {
@@ -159,7 +159,7 @@ describe('Dashboard header — logo group', () => {
   });
 });
 
-// ── Actions group (row 1 on mobile) ───────────────────────────────────────────
+// -- Actions group (row 1 on mobile) -------------------------------------------
 
 describe('Dashboard header — actions group', () => {
   it('contains the audit log button', async () => {
@@ -199,7 +199,7 @@ describe('Dashboard header — actions group', () => {
   });
 });
 
-// ── Tab strip (row 2 on mobile) ───────────────────────────────────────────────
+// -- Tab strip (row 2 on mobile) -----------------------------------------------
 
 describe('Dashboard header — tab strip', () => {
   it('tab strip container has order-3 (second row on mobile)', async () => {
@@ -279,7 +279,7 @@ describe('Dashboard header — tab strip', () => {
   });
 });
 
-// ── Sign out ──────────────────────────────────────────────────────────────────
+// -- Sign out ------------------------------------------------------------------
 
 describe('Dashboard header — sign out', () => {
   it('calls onLogout when the sign out button is clicked', async () => {
