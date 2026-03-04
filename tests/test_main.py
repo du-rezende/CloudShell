@@ -17,7 +17,7 @@ import pytest
 from backend.main import BOOT_ID
 
 
-# ── /api/health ───────────────────────────────────────────────────────────────
+# -- /api/health ---------------------------------------------------------------
 
 async def test_health_returns_200(client):
     """GET /api/health must return HTTP 200."""
@@ -54,7 +54,7 @@ async def test_health_no_auth_required(client):
     assert resp.status_code == 200
 
 
-# ── Global exception handler ──────────────────────────────────────────────────
+# -- Global exception handler --------------------------------------------------
 
 async def test_unhandled_exception_returns_500(db_session):
     """An unhandled exception in a route must return HTTP 500."""
@@ -86,7 +86,7 @@ async def test_unhandled_exception_returns_500(db_session):
         app.dependency_overrides.clear()
 
 
-# ── BOOT_ID ───────────────────────────────────────────────────────────────────
+# -- BOOT_ID -------------------------------------------------------------------
 
 def test_boot_id_is_valid_uuid():
     """BOOT_ID must be a non-empty, valid UUID string."""
@@ -95,7 +95,7 @@ def test_boot_id_is_valid_uuid():
     uuid.UUID(BOOT_ID)
 
 
-# ── lifespan ──────────────────────────────────────────────────────────────────
+# -- lifespan ------------------------------------------------------------------
 
 async def test_lifespan_creates_directories_and_runs_startup():
     """lifespan startup must create data/keys dirs, call init_db, and prune audit entries."""

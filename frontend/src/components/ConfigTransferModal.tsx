@@ -15,7 +15,7 @@ export function ConfigTransferModal({ onClose, onImported }: Props) {
   const [importResult, setImportResult]   = useState<ImportResult | null>(null);
   const [error, setError]                 = useState<string | null>(null);
 
-  // ── Export ──────────────────────────────────────────────────────────────────
+  // -- Export ------------------------------------------------------------------
 
   const handleExport = async () => {
     setExporting(true);
@@ -35,7 +35,7 @@ export function ConfigTransferModal({ onClose, onImported }: Props) {
     }
   };
 
-  // ── Import ──────────────────────────────────────────────────────────────────
+  // -- Import ------------------------------------------------------------------
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

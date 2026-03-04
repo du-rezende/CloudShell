@@ -6,16 +6,16 @@
 Browser (xterm.js)
       │  HTTP REST + WebSocket (:8080)
       ▼
-┌─────────────────────────────────────────┐
+┌-----------------------------------------┐
 │         Nginx Frontend (:80)            │
 │                                         │
 │  /              React SPA (static)      │
 │  /api/*         proxy → backend:8000    │
 │  /api/terminal/ws/*  WebSocket proxy    │
-└──────────────────┬──────────────────────┘
+└------------------┬----------------------┘
                    │  HTTP (internal Docker network)
                    ▼
-┌─────────────────────────────────────────┐
+┌-----------------------------------------┐
 │          FastAPI Backend (:8000)        │
 │                                         │
 │  /api/auth/*      JWT login/logout      │
@@ -24,7 +24,7 @@ Browser (xterm.js)
 │  /api/terminal/*  SSH session + WS      │
 │                                         │
 │         AsyncSSH Client                 │
-└──────────────────┬──────────────────────┘
+└------------------┬----------------------┘
                    │  SSH (TCP)
                    ▼
          Remote SSH Target(s)
@@ -40,47 +40,47 @@ Browser (xterm.js)
 
 ```text
 CloudShell/
-├── backend/
-│   ├── main.py               # FastAPI app, lifespan, global error handler
-│   ├── config.py             # Settings (pydantic-settings, env vars)
-│   ├── database.py           # Async SQLite engine + session factory
-│   ├── models/
-│   │   ├── device.py         # Device SQLAlchemy model
-│   │   └── auth.py           # RevokedToken + AdminCredential models
-│   ├── routers/
-│   │   ├── auth.py           # Login, refresh, logout, /me, change-password
-│   │   ├── devices.py        # Device CRUD
-│   │   ├── keys.py           # SSH key pair generation
-│   │   └── terminal.py       # SSH session creation + WebSocket proxy
-│   └── services/
-│       ├── ssh.py            # AsyncSSH session manager
-│       └── crypto.py         # AES-256-GCM encrypt/decrypt, key file management
+├-- backend/
+│   ├-- main.py               # FastAPI app, lifespan, global error handler
+│   ├-- config.py             # Settings (pydantic-settings, env vars)
+│   ├-- database.py           # Async SQLite engine + session factory
+│   ├-- models/
+│   │   ├-- device.py         # Device SQLAlchemy model
+│   │   └-- auth.py           # RevokedToken + AdminCredential models
+│   ├-- routers/
+│   │   ├-- auth.py           # Login, refresh, logout, /me, change-password
+│   │   ├-- devices.py        # Device CRUD
+│   │   ├-- keys.py           # SSH key pair generation
+│   │   └-- terminal.py       # SSH session creation + WebSocket proxy
+│   └-- services/
+│       ├-- ssh.py            # AsyncSSH session manager
+│       └-- crypto.py         # AES-256-GCM encrypt/decrypt, key file management
 │
-├── frontend/
-│   └── src/
-│       ├── api/client.ts     # Typed REST + WS client, JWT helpers, 401 interceptor
-│       ├── components/
-│       │   ├── Terminal.tsx          # xterm.js terminal wrapper
-│       │   ├── DeviceList.tsx        # Sidebar device list
-│       │   ├── DeviceForm.tsx        # Add/edit device modal
-│       │   ├── ChangePasswordModal.tsx
-│       │   ├── SessionBadge.tsx      # Live session expiry countdown
-│       │   ├── Toast.tsx             # Toast notification system
-│       │   └── ErrorBoundary.tsx     # React error boundary
-│       └── pages/
-│           ├── Login.tsx
-│           └── Dashboard.tsx         # Multi-tab layout
+├-- frontend/
+│   └-- src/
+│       ├-- api/client.ts     # Typed REST + WS client, JWT helpers, 401 interceptor
+│       ├-- components/
+│       │   ├-- Terminal.tsx          # xterm.js terminal wrapper
+│       │   ├-- DeviceList.tsx        # Sidebar device list
+│       │   ├-- DeviceForm.tsx        # Add/edit device modal
+│       │   ├-- ChangePasswordModal.tsx
+│       │   ├-- SessionBadge.tsx      # Live session expiry countdown
+│       │   ├-- Toast.tsx             # Toast notification system
+│       │   └-- ErrorBoundary.tsx     # React error boundary
+│       └-- pages/
+│           ├-- Login.tsx
+│           └-- Dashboard.tsx         # Multi-tab layout
 │
-├── nginx/
-│   └── default.conf          # Nginx config: SPA serving, /api/ proxy, WebSocket proxy
+├-- nginx/
+│   └-- default.conf          # Nginx config: SPA serving, /api/ proxy, WebSocket proxy
 │
-├── docs/                     # Extended documentation
-├── scripts/
-│   └── smoke-test-docker.sh  # Two-container Docker smoke test
+├-- docs/                     # Extended documentation
+├-- scripts/
+│   └-- smoke-test-docker.sh  # Two-container Docker smoke test
 │
-├── Dockerfile.backend        # FastAPI backend image
-├── Dockerfile.frontend       # Node build → nginx:alpine image
-├── docker-compose.yml
-├── requirements.txt
-└── .env.example
+├-- Dockerfile.backend        # FastAPI backend image
+├-- Dockerfile.frontend       # Node build → nginx:alpine image
+├-- docker-compose.yml
+├-- requirements.txt
+└-- .env.example
 ```

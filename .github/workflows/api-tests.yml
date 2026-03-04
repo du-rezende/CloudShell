@@ -32,7 +32,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # ── Python setup ────────────────────────────────────────────────────────
+      # -- Python setup --------------------------------------------------------
       - name: Set up Python ${{ inputs.python-version }}
         uses: actions/setup-python@v5
         with:
@@ -42,7 +42,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      # ── Node setup (build frontend so FastAPI can serve static files) ───────
+      # -- Node setup (build frontend so FastAPI can serve static files) -------
       - name: Set up Node.js ${{ inputs.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -58,7 +58,7 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      # ── Start backend ────────────────────────────────────────────────────────
+      # -- Start backend --------------------------------------------------------
       - name: Start backend server
         run: |
           python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
@@ -76,7 +76,7 @@ jobs:
           done
           curl -sf http://localhost:8000/api/health
 
-      # ── Auth tests ───────────────────────────────────────────────────────────
+      # -- Auth tests -----------------------------------------------------------
       - name: Test health endpoint
         run: |
           RESP=$(curl -sf http://localhost:8000/api/health)
@@ -130,7 +130,7 @@ jobs:
           echo "HTTP status: $HTTP"
           [ "$HTTP" = "401" ] && echo "Unauthenticated rejected OK" || (echo "Expected 401, got $HTTP" && exit 1)
 
-      # ── Device CRUD tests ────────────────────────────────────────────────────
+      # -- Device CRUD tests ----------------------------------------------------
       - name: Test list devices (empty)
         run: |
           RESP=$(curl -sf -H "Authorization: Bearer $TOKEN" http://localhost:8000/api/devices/)
@@ -274,7 +274,7 @@ jobs:
           echo "HTTP status: $HTTP"
           [ "$HTTP" = "404" ] && echo "404 on deleted device OK" || (echo "Expected 404, got $HTTP" && exit 1)
 
-      # ── Frontend build artefact ───────────────────────────────────────────────
+      # -- Frontend build artefact -----------------------------------------------
       - name: Test backend API root is not serving static files
         run: |
           # Backend no longer serves the frontend bundle; / should return 404
@@ -282,7 +282,7 @@ jobs:
           [ "$HTTP" = "404" ] && echo "Backend correctly returns 404 on / (Nginx serves frontend)" \
             || (echo "Expected 404, got $HTTP" && exit 1)
 
-      # ── SSH error handling ────────────────────────────────────────────────────
+      # -- SSH error handling ----------------------------------------------------
       - name: Test SSH session on non-existent device returns 404
         run: |
           HTTP=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
@@ -314,7 +314,7 @@ jobs:
           [ "$HTTP" = "502" ] && echo "SSH connection refused -> 502 OK" \
             || (echo "Expected 502, got $HTTP" && exit 1)
 
-      # ── SSH key auth tests ───────────────────────────────────────────────────
+      # -- SSH key auth tests ---------------------------------------------------
       - name: Test generate SSH key pair
         run: |
           KEYPAIR=$(curl -sf -X POST http://localhost:8000/api/keys/generate \
@@ -422,7 +422,7 @@ jobs:
             && echo ".enc key removed on device delete OK" \
             || (echo ".enc still present after delete" && exit 1)
 
-      # ── Auth / session tests (M5) ─────────────────────────────────────────
+      # -- Auth / session tests (M5) -----------------------------------------
       - name: Test /auth/me returns username and expiry
         run: |
           ME=$(curl -sf http://localhost:8000/api/auth/me \
@@ -537,7 +537,7 @@ jobs:
             && echo "Double logout -> 204 OK" \
             || (echo "Expected 204 on double logout, got $HTTP" && exit 1)
 
-      # ── Teardown ─────────────────────────────────────────────────────────────
+      # -- Teardown -------------------------------------------------------------
       - name: Write integration test summary to job summary
         if: always()
         run: |

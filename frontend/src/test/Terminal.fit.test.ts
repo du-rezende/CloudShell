@@ -17,7 +17,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// ─── rAF / cAF stubs ──────────────────────────────────────────────────────────
+// --- rAF / cAF stubs ----------------------------------------------------------
 // jsdom does not implement requestAnimationFrame; replace with synchronous
 // versions so tests run without needing fake timers for every case.
 let rafCallbacks: Map<number, FrameRequestCallback>;
@@ -60,7 +60,7 @@ function flushRaf(): void {
   for (const cb of pending) cb(performance.now());
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// --- helpers ------------------------------------------------------------------
 
 interface MockFit  { fit: () => void }
 interface MockTerm { rows: number; cols: number }
@@ -110,7 +110,7 @@ function attachFitHandler(
   };
 }
 
-// ─── tests ────────────────────────────────────────────────────────────────────
+// --- tests --------------------------------------------------------------------
 
 describe('Terminal fit handler — terminal-fit event', () => {
   it('calls fit.fit() after rAF when "terminal-fit" is dispatched', () => {

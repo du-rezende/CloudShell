@@ -1,4 +1,4 @@
-/* ── Reset & base ──────────────────────────────────────────────────────── */
+/* -- Reset & base -------------------------------------------------------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
@@ -37,7 +37,7 @@ a {
 }
 a:hover { text-decoration: underline; }
 
-/* ── Utility ──────────────────────────────────────────────────────────── */
+/* -- Utility ------------------------------------------------------------ */
 .container {
   max-width: 1100px;
   margin-inline: auto;
@@ -61,7 +61,7 @@ a:hover { text-decoration: underline; }
   margin-bottom: 3rem;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────────────── */
+/* -- Buttons ----------------------------------------------------------- */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -108,7 +108,7 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
 }
 
-/* ── Badge ───────────────────────────────────────────────────────────── */
+/* -- Badge ------------------------------------------------------------- */
 .badge {
   display: inline-block;
   padding: .2rem .6rem;
@@ -119,7 +119,7 @@ a:hover { text-decoration: underline; }
   color: var(--color-text-muted);
 }
 
-/* ── Navigation ──────────────────────────────────────────────────────── */
+/* -- Navigation -------------------------------------------------------- */
 .nav-bar {
   position: sticky;
   top: 0;
@@ -161,7 +161,7 @@ a:hover { text-decoration: underline; }
 }
 .nav-links a:hover { color: var(--color-text); text-decoration: none; }
 
-/* ── Hero ────────────────────────────────────────────────────────────── */
+/* -- Hero -------------------------------------------------------------- */
 .hero {
   padding-block: 6rem 5rem;
   background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(31,111,235,.18), transparent);
@@ -219,7 +219,7 @@ a:hover { text-decoration: underline; }
   flex-wrap: wrap;
 }
 
-/* ── Screenshots ─────────────────────────────────────────────────────── */
+/* -- Screenshots ------------------------------------------------------- */
 .screenshots-section {
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
@@ -257,7 +257,7 @@ a:hover { text-decoration: underline; }
   border-top: 1px solid var(--color-border);
 }
 
-/* ── Features ────────────────────────────────────────────────────────── */
+/* -- Features ---------------------------------------------------------- */
 .features-section {
   border-bottom: 1px solid var(--color-border);
 }
@@ -313,7 +313,7 @@ a:hover { text-decoration: underline; }
   color: var(--color-text);
 }
 
-/* ── Quick Start ─────────────────────────────────────────────────────── */
+/* -- Quick Start ------------------------------------------------------- */
 .quickstart-section {
   background: var(--color-bg-card);
   border-bottom: 1px solid var(--color-border);
@@ -390,7 +390,7 @@ pre code {
   margin-bottom: .75rem;
 }
 
-/* ── Security ────────────────────────────────────────────────────────── */
+/* -- Security ---------------------------------------------------------- */
 .security-section {
   border-bottom: 1px solid var(--color-border);
 }
@@ -451,7 +451,7 @@ pre code {
 .security-notice svg { flex-shrink: 0; margin-top: .1rem; }
 .security-notice p { color: var(--color-text-muted); line-height: 1.5; }
 
-/* ── CTA ─────────────────────────────────────────────────────────────── */
+/* -- CTA --------------------------------------------------------------- */
 .cta-section {
   background: radial-gradient(ellipse 70% 60% at 50% 120%, rgba(31,111,235,.15), transparent);
   border-bottom: 1px solid var(--color-border);
@@ -474,7 +474,7 @@ pre code {
   margin-bottom: 2rem;
 }
 
-/* ── Footer ──────────────────────────────────────────────────────────── */
+/* -- Footer ------------------------------------------------------------ */
 .footer {
   padding-block: 2rem;
   border-top: 1px solid var(--color-border);
@@ -501,7 +501,7 @@ pre code {
   gap: 1.25rem;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────── */
+/* -- Responsive -------------------------------------------------------- */
 @media (max-width: 640px) {
   .nav-links a:not(.btn) { display: none; }
   .screenshots-grid { grid-template-columns: 1fr; }

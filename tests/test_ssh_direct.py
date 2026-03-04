@@ -26,7 +26,7 @@ from backend.services.ssh import (
 )
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _make_process(stdout_chunks: list) -> MagicMock:
     """Return a mock SSH process whose stdout.read() returns successive items."""
@@ -77,7 +77,7 @@ def _resize_msg(cols: int = 80, rows: int = 24) -> dict:
     return {"bytes": json.dumps({"type": "resize", "cols": cols, "rows": rows}).encode()}
 
 
-# ── create_session: private_key_path branch (line 152) ────────────────────────
+# -- create_session: private_key_path branch (line 152) ------------------------
 
 async def test_create_session_with_private_key():
     """create_session must add client_keys to connect_kwargs when private_key_path is set."""
@@ -102,7 +102,7 @@ async def test_create_session_with_private_key():
         _sessions.pop(sid, None)
 
 
-# ── initial resize: malformed JSON (lines 189-190) ────────────────────────────
+# -- initial resize: malformed JSON (lines 189-190) ----------------------------
 
 async def test_stream_session_initial_malformed_json_uses_defaults():
     """A non-JSON initial frame must be silently ignored; default PTY dimensions are used."""
@@ -144,7 +144,7 @@ async def test_stream_session_initial_non_resize_json_uses_defaults():
     assert kwargs["term_size"] == (220, 50)
 
 
-# ── ws_to_ssh: stdin body (lines 214-229) ─────────────────────────────────────
+# -- ws_to_ssh: stdin body (lines 214-229) -------------------------------------
 
 async def test_stream_session_ws_to_ssh_plain_bytes():
     """Plain bytes from the WebSocket must be forwarded to SSH stdin."""
@@ -264,7 +264,7 @@ async def test_stream_session_ws_to_ssh_non_resize_control_json_continues():
         assert call[0][0] != unknown_ctrl
 
 
-# ── ssh_to_ws: exception handler (lines 245-246) ──────────────────────────────
+# -- ssh_to_ws: exception handler (lines 245-246) ------------------------------
 
 async def test_stream_session_ssh_to_ws_exception_swallowed():
     """An exception in ssh_to_ws must be swallowed so stream_session completes."""
@@ -286,7 +286,7 @@ async def test_stream_session_ssh_to_ws_exception_swallowed():
         _sessions.pop(sid, None)
 
 
-# ── pending task cancellation (line 257) ─────────────────────────────────────
+# -- pending task cancellation (line 257) -------------------------------------
 
 async def test_stream_session_pending_tasks_are_cancelled():
     """When ssh_to_ws finishes first, the still-running ws_to_ssh task must be cancelled."""
@@ -328,7 +328,7 @@ async def test_stream_session_pending_tasks_are_cancelled():
     ws.close.assert_called_with(code=1000)
 
 
-# ── websocket.close() exception swallowing (lines 264-265) ───────────────────
+# -- websocket.close() exception swallowing (lines 264-265) -------------------
 
 async def test_stream_session_ws_close_exception_swallowed():
     """An exception from websocket.close() at stream end must be swallowed."""

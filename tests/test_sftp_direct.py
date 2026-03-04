@@ -50,7 +50,7 @@ from backend.services.sftp import (
 from fastapi import HTTPException
 
 
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeRequest:
     """Minimal Request stand-in for get_client_ip."""
@@ -120,7 +120,7 @@ def _key_device(has_key: bool = True) -> MagicMock:
     return d
 
 
-# ── services/sftp.py: open_sftp_session branches ─────────────────────────────
+# -- services/sftp.py: open_sftp_session branches -----------------------------
 
 async def test_open_sftp_session_known_hosts_with_kh_path():
     """When _known_hosts_path returns a real path, client_factory is set."""
@@ -184,7 +184,7 @@ async def test_open_sftp_session_with_private_key_path():
         _sftp_sessions.pop(sid, None)
 
 
-# ── services/sftp.py: close_sftp_session exception-swallowing ─────────────────
+# -- services/sftp.py: close_sftp_session exception-swallowing -----------------
 
 async def test_close_sftp_session_sftp_exit_raises_is_swallowed():
     """sftp.exit() raising must not propagate — exception is swallowed."""
@@ -221,7 +221,7 @@ async def test_close_sftp_session_conn_raises_is_swallowed():
     assert sid not in _sftp_sessions
 
 
-# ── services/sftp.py: list_directory special cases ────────────────────────────
+# -- services/sftp.py: list_directory special cases ----------------------------
 
 async def test_list_directory_bytes_filename_decoded():
     """Filenames returned as bytes must be decoded to str."""
@@ -321,7 +321,7 @@ async def test_list_directory_non_str_non_bytes_filename():
         _sftp_sessions.pop(sid, None)
 
 
-# ── routers/sftp.py: _resolve_device_credentials ─────────────────────────────
+# -- routers/sftp.py: _resolve_device_credentials -----------------------------
 
 async def test_resolve_credentials_key_device_writes_temp_file():
     """Key device: PEM is written to a temp file, chmod 0o600 applied."""
@@ -374,7 +374,7 @@ async def test_resolve_credentials_password_device_no_encrypted():
     assert tmp_key_file is None
 
 
-# ── routers/sftp.py: open_session direct calls ───────────────────────────────
+# -- routers/sftp.py: open_session direct calls -------------------------------
 
 async def test_open_session_direct_device_not_found():
     """open_session raises 404 when device is missing."""
@@ -511,7 +511,7 @@ async def test_open_session_direct_unlink_oserror_is_swallowed():
     assert result["session_id"] == fake_id
 
 
-# ── services/sftp.py: remaining gap lines ─────────────────────────────────────
+# -- services/sftp.py: remaining gap lines -------------------------------------
 
 async def test_open_sftp_session_with_password():
     """password is not None: it must be forwarded to asyncssh.connect."""

@@ -27,7 +27,7 @@ export function LayoutPicker({ current, onSelect }: Props) {
 
   return (
     <div className="relative flex items-center gap-1">
-      {/* ── Preset buttons ────────────────────────────────────────────────── */}
+      {/* -- Preset buttons -------------------------------------------------- */}
       {LAYOUT_PRESETS.map((preset) => (
         <button
           key={preset.label}
@@ -52,7 +52,7 @@ export function LayoutPicker({ current, onSelect }: Props) {
         </button>
       ))}
 
-      {/* ── Custom grid button ────────────────────────────────────────────── */}
+      {/* -- Custom grid button ---------------------------------------------- */}
       <button
         ref={btnRef}
         title="Custom grid"
@@ -67,7 +67,7 @@ export function LayoutPicker({ current, onSelect }: Props) {
         <LayoutGrid size={15} />
       </button>
 
-      {/* ── Custom grid popover ───────────────────────────────────────────── */}
+      {/* -- Custom grid popover --------------------------------------------- */}
       {open && (
         <>
           {/* Backdrop */}
@@ -107,7 +107,7 @@ export function LayoutPicker({ current, onSelect }: Props) {
   );
 }
 
-/* ── Small +/- spinner ──────────────────────────────────────────────────────── */
+/* -- Small +/- spinner -------------------------------------------------------- */
 interface DimControlProps {
   label: string;
   value: number;

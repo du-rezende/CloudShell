@@ -44,7 +44,7 @@ from backend.models.audit import AuditLog
 from backend.services.audit import ACTION_SESSION_ENDED, ACTION_SESSION_STARTED
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _sftp_device_payload(**overrides) -> dict:
     return {
@@ -114,7 +114,7 @@ def _make_fake_conn(sftp_client: MagicMock) -> MagicMock:
     return conn
 
 
-# ── Device connection_type field ──────────────────────────────────────────────
+# -- Device connection_type field ----------------------------------------------
 
 @pytest.mark.asyncio
 async def test_device_connection_type_persisted(auth_client):
@@ -150,7 +150,7 @@ async def test_device_update_connection_type(auth_client):
     assert upd.json()["connection_type"] == "sftp"
 
 
-# ── POST /api/sftp/session/{device_id} ───────────────────────────────────────
+# -- POST /api/sftp/session/{device_id} ---------------------------------------
 
 @pytest.mark.asyncio
 async def test_open_sftp_session_requires_auth(client, db_session):
@@ -245,7 +245,7 @@ async def test_open_sftp_session_success(auth_client, db_session):
     _sftp_sessions.pop(session_id, None)
 
 
-# ── DELETE /api/sftp/session/{session_id} ────────────────────────────────────
+# -- DELETE /api/sftp/session/{session_id} ------------------------------------
 
 @pytest.mark.asyncio
 async def test_close_sftp_session(auth_client, db_session):
@@ -273,7 +273,7 @@ async def test_close_sftp_session(auth_client, db_session):
     assert result.scalars().first() is not None
 
 
-# ── GET /api/sftp/{session_id}/list ──────────────────────────────────────────
+# -- GET /api/sftp/{session_id}/list ------------------------------------------
 
 @pytest.mark.asyncio
 async def test_list_unknown_session(auth_client):
@@ -318,7 +318,7 @@ async def test_list_directory(auth_client):
         _sftp_sessions.pop(session_id, None)
 
 
-# ── GET /api/sftp/{session_id}/download ──────────────────────────────────────
+# -- GET /api/sftp/{session_id}/download --------------------------------------
 
 @pytest.mark.asyncio
 async def test_download_unknown_session(auth_client):
@@ -359,7 +359,7 @@ async def test_download_file(auth_client):
         _sftp_sessions.pop(session_id, None)
 
 
-# ── POST /api/sftp/{session_id}/upload ───────────────────────────────────────
+# -- POST /api/sftp/{session_id}/upload ---------------------------------------
 
 @pytest.mark.asyncio
 async def test_upload_file(auth_client):
@@ -394,7 +394,7 @@ async def test_upload_file(auth_client):
         _sftp_sessions.pop(session_id, None)
 
 
-# ── POST /api/sftp/{session_id}/delete ───────────────────────────────────────
+# -- POST /api/sftp/{session_id}/delete ---------------------------------------
 
 @pytest.mark.asyncio
 async def test_delete_file(auth_client):
@@ -425,7 +425,7 @@ async def test_delete_file(auth_client):
         _sftp_sessions.pop(session_id, None)
 
 
-# ── POST /api/sftp/{session_id}/rename ───────────────────────────────────────
+# -- POST /api/sftp/{session_id}/rename ---------------------------------------
 
 @pytest.mark.asyncio
 async def test_rename(auth_client):
@@ -456,7 +456,7 @@ async def test_rename(auth_client):
         _sftp_sessions.pop(session_id, None)
 
 
-# ── POST /api/sftp/{session_id}/mkdir ────────────────────────────────────────
+# -- POST /api/sftp/{session_id}/mkdir ----------------------------------------
 
 @pytest.mark.asyncio
 async def test_mkdir(auth_client):

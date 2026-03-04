@@ -15,7 +15,7 @@ from backend.models.audit import AuditLog
 
 log = logging.getLogger(__name__)
 
-# ── Action constants ──────────────────────────────────────────────────────────
+# -- Action constants ----------------------------------------------------------
 
 ACTION_LOGIN = "LOGIN"
 ACTION_LOGOUT = "LOGOUT"
@@ -24,7 +24,7 @@ ACTION_SESSION_STARTED = "SESSION_STARTED"
 ACTION_SESSION_ENDED = "SESSION_ENDED"
 
 
-# ── IP extraction ─────────────────────────────────────────────────────────────
+# -- IP extraction -------------------------------------------------------------
 
 def get_client_ip(request: Request) -> str | None:
     """Return the real client IP, honouring proxy headers.
@@ -54,7 +54,7 @@ def get_client_ip(request: Request) -> str | None:
     return None
 
 
-# ── Write helpers ─────────────────────────────────────────────────────────────
+# -- Write helpers -------------------------------------------------------------
 
 async def write_audit(
     db: AsyncSession,

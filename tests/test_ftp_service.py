@@ -35,7 +35,7 @@ from backend.services.ftp import (
 )
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 
 def _make_fake_client() -> MagicMock:
@@ -83,7 +83,7 @@ def _clean_sessions():
     ftp_service._ftp_sessions.clear()
 
 
-# ── open_ftp_session ──────────────────────────────────────────────────────────
+# -- open_ftp_session ----------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -140,7 +140,7 @@ async def test_open_ftp_session_anonymous():
     fake.login.assert_awaited_once_with("anonymous", "")
 
 
-# ── close_ftp_session ─────────────────────────────────────────────────────────
+# -- close_ftp_session ---------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -172,7 +172,7 @@ async def test_close_ftp_session_quit_exception_is_swallowed():
     assert sid not in ftp_service._ftp_sessions
 
 
-# ── Session metadata helpers ──────────────────────────────────────────────────
+# -- Session metadata helpers --------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -200,7 +200,7 @@ def test_get_ftp_session_unknown():
     assert get_ftp_session("bad-id") is None
 
 
-# ── list_directory ────────────────────────────────────────────────────────────
+# -- list_directory ------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -224,7 +224,7 @@ async def test_list_directory_unknown_session():
         await list_directory("no-such-session", "/")
 
 
-# ── _parse_ftp_mtime ──────────────────────────────────────────────────────────
+# -- _parse_ftp_mtime ----------------------------------------------------------
 
 
 def test_parse_ftp_mtime_valid():
@@ -249,7 +249,7 @@ def test_parse_ftp_mtime_overflow():
     assert _parse_ftp_mtime("20249901000000") == 0
 
 
-# ── read_file_bytes ───────────────────────────────────────────────────────────
+# -- read_file_bytes -----------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -268,7 +268,7 @@ async def test_read_file_bytes_unknown_session():
         await read_file_bytes("no-such-session", "/file.txt")
 
 
-# ── write_file_bytes ──────────────────────────────────────────────────────────
+# -- write_file_bytes ----------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -289,7 +289,7 @@ async def test_write_file_bytes_unknown_session():
         await write_file_bytes("no-such-session", "/x.txt", b"data")
 
 
-# ── delete_remote ─────────────────────────────────────────────────────────────
+# -- delete_remote -------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -316,7 +316,7 @@ async def test_delete_unknown_session():
         await delete_remote("no-such-session", "/x", is_dir=False)
 
 
-# ── rename_remote ─────────────────────────────────────────────────────────────
+# -- rename_remote -------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -334,7 +334,7 @@ async def test_rename_unknown_session():
         await rename_remote("no-such-session", "/a", "/b")
 
 
-# ── mkdir_remote ──────────────────────────────────────────────────────────────
+# -- mkdir_remote --------------------------------------------------------------
 
 
 @pytest.mark.asyncio

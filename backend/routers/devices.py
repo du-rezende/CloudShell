@@ -18,7 +18,7 @@ from backend.services.crypto import (
 router = APIRouter(prefix="/devices", tags=["devices"])
 
 
-# ── Schemas ──────────────────────────────────────────────────────────────────
+# -- Schemas ------------------------------------------------------------------
 
 class DeviceCreate(BaseModel):
     name: str
@@ -57,14 +57,14 @@ class DeviceOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _store_key(device_id: int, pem: str, keys_dir: str) -> str:
     """Encrypt and save a PEM key; returns the stored filename."""
     return save_encrypted_key(device_id, pem, keys_dir)
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# -- Routes --------------------------------------------------------------------
 
 @router.get("/", response_model=list[DeviceOut])
 async def list_devices(

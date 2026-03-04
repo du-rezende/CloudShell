@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from backend.database import Base, get_db, init_db
 
 
-# ── _import_models / Base.metadata ───────────────────────────────────────────
+# -- _import_models / Base.metadata -------------------------------------------
 
 def test_base_metadata_contains_devices_table():
     """After module import the 'devices' table must be registered on Base.metadata."""
@@ -37,7 +37,7 @@ def test_base_metadata_contains_admin_credentials_table():
     assert "admin_credentials" in Base.metadata.tables
 
 
-# ── init_db ───────────────────────────────────────────────────────────────────
+# -- init_db -------------------------------------------------------------------
 
 async def test_init_db_creates_tables():
     """init_db must create all expected tables in a fresh in-memory database."""
@@ -62,7 +62,7 @@ async def test_init_db_creates_tables():
         await engine.dispose()
 
 
-# ── get_db ────────────────────────────────────────────────────────────────────
+# -- get_db --------------------------------------------------------------------
 
 async def test_get_db_yields_session(db_session):
     """get_db must yield a usable AsyncSession (covered via the conftest fixture)."""

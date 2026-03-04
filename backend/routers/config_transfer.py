@@ -39,7 +39,7 @@ log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/config", tags=["config"])
 
-# ── Schemas ───────────────────────────────────────────────────────────────────
+# -- Schemas -------------------------------------------------------------------
 
 EXPORT_FORMAT_VERSION = 1
 
@@ -75,7 +75,7 @@ class ImportResult(BaseModel):
     messages: list[str]
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 async def _build_export_bundle(db: AsyncSession, keys_dir: str) -> ExportBundle:
     """Read all devices from the DB and decrypt their secrets."""
@@ -120,7 +120,7 @@ async def _build_export_bundle(db: AsyncSession, keys_dir: str) -> ExportBundle:
     )
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# -- Routes --------------------------------------------------------------------
 
 @router.get("/export")
 async def export_config(
@@ -153,7 +153,7 @@ async def import_config(
     """
     settings = get_settings()
 
-    # ── Parse uploaded JSON ───────────────────────────────────────────────────
+    # -- Parse uploaded JSON ---------------------------------------------------
     try:
         raw = await file.read()
         data = json.loads(raw)
@@ -176,7 +176,7 @@ async def import_config(
     return await _process_import_bundle(db, bundle, settings.keys_dir)
 
 
-# ── Internal helpers (extracted for testability / coverage) ───────────────────
+# -- Internal helpers (extracted for testability / coverage) -------------------
 
 async def _build_export_response(db: AsyncSession, keys_dir: str) -> Response:
     """Build the JSON export Response object from the current DB state."""
@@ -203,7 +203,7 @@ async def _process_import_bundle(
     Each device is inserted inside its own savepoint so a single failure does
     not roll back previously-imported entries.
     """
-    # ── Fetch existing devices to detect duplicates ───────────────────────────
+    # -- Fetch existing devices to detect duplicates ---------------------------
     result = await db.execute(select(Device))
     existing = result.scalars().all()
     # Key: (name, hostname, port, username, connection_type) → device id

@@ -29,7 +29,7 @@ from backend.models.auth import AdminCredential, RevokedToken
 from backend.routers.auth import ALGORITHM, _verify_credentials
 
 
-# ── _verify_credentials ───────────────────────────────────────────────────────
+# -- _verify_credentials -------------------------------------------------------
 
 async def test_verify_credentials_env_fallback(db_session):
     """When no DB hash exists, credentials are checked against the env-var password."""
@@ -61,7 +61,7 @@ async def test_verify_credentials_wrong_username(db_session):
     assert result is False
 
 
-# ── get_current_user — boot-id mismatch ──────────────────────────────────────
+# -- get_current_user — boot-id mismatch --------------------------------------
 
 async def test_token_with_wrong_boot_id_rejected(client):
     """A token carrying a different boot-id must be rejected with 401."""
@@ -80,7 +80,7 @@ async def test_token_with_wrong_boot_id_rejected(client):
     assert "server restart" in resp.json()["detail"].lower()
 
 
-# ── get_current_user — missing claims ────────────────────────────────────────
+# -- get_current_user — missing claims ----------------------------------------
 
 async def test_token_without_sub_rejected(client):
     """A token with no 'sub' claim must be rejected with 401."""
@@ -116,7 +116,7 @@ async def test_token_without_jti_rejected(client):
     assert resp.status_code == 401
 
 
-# ── _get_payload — boot-id mismatch & revoked ────────────────────────────────
+# -- _get_payload — boot-id mismatch & revoked --------------------------------
 
 async def test_refresh_with_wrong_boot_id_rejected(client):
     """POST /api/auth/refresh with a stale boot-id token must return 401."""
@@ -178,7 +178,7 @@ async def test_refresh_with_no_jti_rejected(client):
     assert resp.status_code == 401
 
 
-# ── logout edge-cases ─────────────────────────────────────────────────────────
+# -- logout edge-cases ---------------------------------------------------------
 
 async def test_logout_with_invalid_jwt_returns_204(client):
     """Logout with a completely invalid JWT must return 204 (silent ignore)."""
@@ -212,7 +212,7 @@ async def test_logout_twice_does_not_duplicate_revoked_token(client, db_session)
     assert len(rows) == 1
 
 
-# ── change-password: update existing row vs. create new row ──────────────────
+# -- change-password: update existing row vs. create new row ------------------
 
 async def test_change_password_updates_existing_db_row(client, db_session):
     """When an AdminCredential row already exists it must be updated in-place."""

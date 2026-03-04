@@ -6,10 +6,10 @@ Static marketing website for the CloudShell project.
 
 ```text
 website/
-├── index.html        # Main page
-├── style.css         # All styles
-├── favicon.svg       # Site favicon
-└── images/           # Populated at deploy time from repo-root images/
+├-- index.html        # Main page
+├-- style.css         # All styles
+├-- favicon.svg       # Site favicon
+└-- images/           # Populated at deploy time from repo-root images/
 ```
 
 The `images/` directory is **not committed** to the website folder. The GitHub
