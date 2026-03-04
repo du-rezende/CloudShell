@@ -73,7 +73,8 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
           if [ -f coverage-output.txt ]; then
             echo '```' >> "$GITHUB_STEP_SUMMARY"
-            cat coverage-output.txt >> "$GITHUB_STEP_SUMMARY"
+            # Strip ANSI color codes from the output
+            sed 's/\x1b\[[0-9;]*m//g' coverage-output.txt >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           else
             echo "No coverage data available." >> "$GITHUB_STEP_SUMMARY"
