@@ -77,6 +77,14 @@ jobs:
         env:
           COVERAGE_FILE: .coverage
 
+      - name: Enumerate API endpoints and append to job summary
+        if: always()
+        run: |
+          echo "## API Endpoints" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          # Run the endpoint lister and append its Markdown table to the summary
+          python3 scripts/list_endpoints.py >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || python3 -m scripts.list_endpoints >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "Failed to enumerate endpoints" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish JUnit test results artifact
         uses: actions/upload-artifact@v4
         if: always()

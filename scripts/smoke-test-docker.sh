@@ -23,10 +23,10 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# ── Network ────────────────────────────────────────────────────────────────────
+# -- Network --------------------------------------------------------------------
 docker network create "$NETWORK" 2>/dev/null || true
 
-# ── Start backend ──────────────────────────────────────────────────────────────
+# -- Start backend --------------------------------------------------------------
 docker run -d \
     --name "$BACKEND_CONTAINER" \
     --network "$NETWORK" \
@@ -36,14 +36,14 @@ docker run -d \
     -e ADMIN_PASSWORD=admin \
     "$BACKEND_IMAGE"
 
-# ── Start frontend ─────────────────────────────────────────────────────────────
+# -- Start frontend -------------------------------------------------------------
 docker run -d \
     --name "$FRONTEND_CONTAINER" \
     --network "$NETWORK" \
     -p 8080:80 \
     "$FRONTEND_IMAGE"
 
-# ── Wait for backend ───────────────────────────────────────────────────────────
+# -- Wait for backend -----------------------------------------------------------
 echo "Waiting for backend to be healthy..."
 for i in $(seq 1 30); do
     STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$BACKEND_CONTAINER" 2>/dev/null || echo "starting")
@@ -52,7 +52,7 @@ for i in $(seq 1 30); do
     sleep 2
 done
 
-# ── Wait for frontend ──────────────────────────────────────────────────────────
+# -- Wait for frontend ----------------------------------------------------------
 echo "Waiting for frontend to be healthy..."
 for i in $(seq 1 20); do
     STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$FRONTEND_CONTAINER" 2>/dev/null || echo "starting")
@@ -61,18 +61,18 @@ for i in $(seq 1 20); do
     sleep 2
 done
 
-# ── Collect final statuses ─────────────────────────────────────────────────────
+# -- Collect final statuses -----------------------------------------------------
 BACKEND_STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$BACKEND_CONTAINER")
 FRONTEND_STATUS=$(docker inspect --format='{{.State.Health.Status}}' "$FRONTEND_CONTAINER")
 
 echo "Final backend status : $BACKEND_STATUS"
 echo "Final frontend status: $FRONTEND_STATUS"
 
-# ── Verify Nginx proxies the API ───────────────────────────────────────────────
+# -- Verify Nginx proxies the API -----------------------------------------------
 HTTP=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/api/health)
 echo "Proxied /api/health HTTP status: $HTTP"
 
-# ── Assert ─────────────────────────────────────────────────────────────────────
+# -- Assert ---------------------------------------------------------------------
 FAIL=0
 [ "$BACKEND_STATUS"  = "healthy" ] || { echo "FAIL: backend never became healthy";  FAIL=1; }
 [ "$FRONTEND_STATUS" = "healthy" ] || { echo "FAIL: frontend never became healthy"; FAIL=1; }

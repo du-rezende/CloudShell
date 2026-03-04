@@ -44,6 +44,7 @@ Supports connections audit:
 - **Concurrent connections**: support multiple simultaneous SSH sessions
 - **SFTP file manager**: browse, upload, download, rename, and delete files on any device directly from the browser.
 - **FTP/FTPS file manager**: same convenient web-based file operations over plain FTP or explicit FTPS (AUTH TLS).
+- **Configuration import/export**: easily import and export device configurations in standard JSON format.
 
 Please note: all sessions are initiated on the server side and not the client.
 
