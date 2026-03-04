@@ -62,6 +62,8 @@ jobs:
       - name: Run Vitest with coverage
         working-directory: frontend
         run: npm run test:coverage 2>&1 | tee coverage-output.txt
+        env:
+          FORCE_COLOR: "0"
 
       - name: Write coverage summary to job summary
         if: always()
