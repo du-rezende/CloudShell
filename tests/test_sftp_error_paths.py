@@ -17,7 +17,7 @@ import asyncssh
 import pytest
 
 
-# -- Helpers ------------------------------------───────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _sftp_device_payload(**overrides) -> dict:
     return {
@@ -71,7 +71,7 @@ async def _open_session(auth_client, sftp, conn) -> str:
     return r.json()["session_id"]
 
 
-# ── POST /api/sftp/session/{device_id} — extra error paths ────────────────────
+# -- POST /api/sftp/session/{device_id} — extra error paths --------------------
 
 async def test_open_sftp_session_connection_lost_returns_504(auth_client):
     """asyncssh.ConnectionLost during open must return 504."""
@@ -111,7 +111,7 @@ async def test_open_sftp_session_host_key_not_verifiable_returns_502(auth_client
     assert r.status_code == 502
 
 
-# ── GET /{session_id}/list — 500 path ─────────────────────────────────────────
+# -- GET /{session_id}/list — 500 path -----------------------------------------
 
 async def test_list_directory_service_error_returns_500(auth_client):
     """An unexpected exception from list_directory must return 500."""
@@ -132,7 +132,7 @@ async def test_list_directory_service_error_returns_500(auth_client):
         _sftp_sessions.pop(sid, None)
 
 
-# ── GET /{session_id}/download — 500 path ────────────────────────────────────
+# -- GET /{session_id}/download — 500 path ------------------------------------
 
 async def test_download_file_service_error_returns_500(auth_client):
     """An unexpected exception from read_file_bytes must return 500."""
@@ -154,7 +154,7 @@ async def test_download_file_service_error_returns_500(auth_client):
         _sftp_sessions.pop(sid, None)
 
 
-# ── POST /{session_id}/upload — error paths ───────────────────────────────────
+# -- POST /{session_id}/upload — error paths -----------------------------------
 
 async def test_upload_unknown_session_returns_404(auth_client):
     """Uploading to an unknown session must return 404."""
@@ -211,7 +211,7 @@ async def test_upload_path_with_trailing_slash(auth_client):
         _sftp_sessions.pop(sid, None)
 
 
-# ── POST /{session_id}/delete — error paths ───────────────────────────────────
+# -- POST /{session_id}/delete — error paths -----------------------------------
 
 async def test_delete_unknown_session_returns_404(auth_client):
     """Deleting on an unknown session must return 404."""
@@ -243,7 +243,7 @@ async def test_delete_service_error_returns_500(auth_client):
         _sftp_sessions.pop(sid, None)
 
 
-# ── POST /{session_id}/rename — error paths ───────────────────────────────────
+# -- POST /{session_id}/rename — error paths -----------------------------------
 
 async def test_rename_unknown_session_returns_404(auth_client):
     """Renaming on an unknown session must return 404."""
@@ -275,7 +275,7 @@ async def test_rename_service_error_returns_500(auth_client):
         _sftp_sessions.pop(sid, None)
 
 
-# ── POST /{session_id}/mkdir — error paths ────────────────────────────────────
+# -- POST /{session_id}/mkdir — error paths ------------------------------------
 
 async def test_mkdir_unknown_session_returns_404(auth_client):
     """Creating a directory on an unknown session must return 404."""
