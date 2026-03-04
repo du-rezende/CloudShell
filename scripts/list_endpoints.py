@@ -30,7 +30,7 @@ except Exception as exc:  # pragma: no cover - runtime safety for CI
 
 
 def classify_http_route(route: APIRoute) -> bool:
-    """Return True if route appears to require get_current_user dependency."""
+    """Return True if route appears to require authentication."""
     try:
         deps = getattr(route, "dependant", None)
         if deps and hasattr(deps, "dependencies"):
@@ -38,8 +38,9 @@ def classify_http_route(route: APIRoute) -> bool:
                 call = getattr(d, "call", None)
                 if call is get_current_user:
                     return True
-                # Fallback: compare by name
-                if getattr(call, "__name__", None) == "get_current_user":
+                # Fallback: compare by name (catches get_current_user, _get_payload, etc.)
+                call_name = getattr(call, "__name__", None)
+                if call_name in ("get_current_user", "_get_payload"):
                     return True
     except Exception:
         # Be permissive on failure: assume public
