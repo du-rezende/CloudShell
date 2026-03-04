@@ -8,16 +8,38 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  # -- Unit tests (must pass before any image is built) --------------------------
+  unit-tests:
+    name: Unit Tests
+    uses: ./.github/workflows/unit-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+
+  # -- Frontend tests (must pass before any image is built) ----------------------
+  frontend-tests:
+    name: Frontend Tests
+    uses: ./.github/workflows/frontend-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+
   # -- Integration tests (must pass before any image is built) -----------------
-  test:
+  integration-tests:
     name: Integration Tests
     uses: ./.github/workflows/api-tests.yml
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
 
   # -- Backend: amd64 ----------------------------------------------------------
   build-backend-amd64:
     name: Build backend (linux/amd64)
     runs-on: ubuntu-24.04
-    needs: [test]
+    needs: [unit-tests, frontend-tests, integration-tests]
     permissions:
       contents: read
       packages: write
@@ -61,7 +83,7 @@ jobs:
   build-backend-arm64:
     name: Build backend (linux/arm64)
     runs-on: ubuntu-24.04-arm
-    needs: [test]
+    needs: [unit-tests, frontend-tests, integration-tests]
     permissions:
       contents: read
       packages: write
@@ -105,7 +127,7 @@ jobs:
   build-frontend-amd64:
     name: Build frontend (linux/amd64)
     runs-on: ubuntu-24.04
-    needs: [test]
+    needs: [unit-tests, frontend-tests, integration-tests]
     permissions:
       contents: read
       packages: write
@@ -148,7 +170,7 @@ jobs:
   build-frontend-arm64:
     name: Build frontend (linux/arm64)
     runs-on: ubuntu-24.04-arm
-    needs: [test]
+    needs: [unit-tests, frontend-tests, integration-tests]
     permissions:
       contents: read
       packages: write

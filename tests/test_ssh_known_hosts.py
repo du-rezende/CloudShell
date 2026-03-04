@@ -25,7 +25,7 @@ from backend.services import ssh as ssh_module
 from backend.services.ssh import _known_hosts_path, _make_accept_new_client
 
 
-# ── _known_hosts_path ─────────────────────────────────────────────────────────
+# -- _known_hosts_path ---------------------------------------------------------
 
 def test_known_hosts_path_no_data_dir(monkeypatch):
     """_known_hosts_path must return None when DATA_DIR is not set."""
@@ -51,7 +51,7 @@ def test_known_hosts_path_existing_file_not_truncated(monkeypatch, tmp_path):
     assert kh.read_text() == "existing content\n"
 
 
-# ── _make_accept_new_client ───────────────────────────────────────────────────
+# -- _make_accept_new_client ---------------------------------------------------
 
 def _make_mock_key(export_value: str = "ssh-rsa AAAA... host") -> MagicMock:
     """Return a mock asyncssh.SSHKey whose export_public_key returns bytes."""
@@ -155,7 +155,7 @@ def test_accept_new_client_read_exception_falls_back_to_new_host(tmp_path):
     assert result is True
 
 
-# ── create_session with known_hosts="auto" ────────────────────────────────────
+# -- create_session with known_hosts="auto" ------------------------------------
 
 async def test_create_session_auto_with_data_dir_uses_accept_new(monkeypatch, tmp_path):
     """With DATA_DIR set, known_hosts='auto' must pass a client_factory to asyncssh.connect."""
@@ -244,7 +244,7 @@ async def test_create_session_explicit_known_hosts_path(tmp_path):
         ssh_module._sessions.pop(session_id, None)
 
 
-# ── stream_session — session not found ───────────────────────────────────────
+# -- stream_session — session not found ---------------------------------------
 
 async def test_stream_session_not_found_closes_4004():
     """stream_session must send an error frame and close with code 4004 for unknown IDs."""

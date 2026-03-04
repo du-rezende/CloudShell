@@ -17,7 +17,7 @@ import asyncssh
 import pytest
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers ------------------------------------───────────────────────────────
 
 def _sftp_device_payload(**overrides) -> dict:
     return {
