@@ -14,7 +14,7 @@ from backend.routers import audit_router, auth_router, config_transfer_router, d
 
 VERSION = os.getenv("APP_VERSION", "dev")
 
-# ── Boot identity ─────────────────────────────────────────────────────────────
+# -- Boot identity -------------------------------------------------------------
 # A fresh random UUID is generated each time the process starts.
 # Every JWT embeds this value; tokens issued before the current boot are
 # rejected at validation time, effectively expiring all sessions on restart.
@@ -64,7 +64,7 @@ app.add_middleware(
 )
 
 
-# ── Global exception handler ──────────────────────────────────────────────────
+# -- Global exception handler --------------------------------------------------
 
 @app.exception_handler(Exception)
 async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
@@ -75,7 +75,7 @@ async def _unhandled(request: Request, exc: Exception) -> JSONResponse:
     )
 
 
-# ── API routes ────────────────────────────────────────────────────────────────
+# -- API routes ----------------------------------------------------------------
 
 app.include_router(audit_router, prefix="/api")
 app.include_router(auth_router, prefix="/api")

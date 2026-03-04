@@ -54,7 +54,7 @@ Please note: all sessions are initiated on the server side and not the client.
 ```yaml
 services:
 
-  # ── Backend: FastAPI + AsyncSSH ─────────────────────────────────────────────
+  # -- Backend: FastAPI + AsyncSSH ---------------------------------------------
   backend:
     image: ghcr.io/iu2frl/cloudshell-backend:latest
     restart: unless-stopped
@@ -76,7 +76,7 @@ services:
     networks:
       - internal
 
-  # ── Frontend: Nginx + React bundle + reverse proxy ──────────────────────────
+  # -- Frontend: Nginx + React bundle + reverse proxy --------------------------
   frontend:
     image: ghcr.io/iu2frl/cloudshell-frontend:latest
     restart: unless-stopped

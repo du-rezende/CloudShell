@@ -24,7 +24,7 @@ import {
   terminalWsUrl,
 } from '../api/client';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 /** Build a minimal JWT with the given exp (unix seconds). */
 function makeToken(exp: number): string {
@@ -33,7 +33,7 @@ function makeToken(exp: number): string {
   return `${header}.${payload}.fakesig`;
 }
 
-// ── getTokenExpiry ────────────────────────────────────────────────────────────
+// -- getTokenExpiry ------------------------------------------------------------
 
 describe('getTokenExpiry', () => {
   beforeEach(() => localStorage.clear());
@@ -67,7 +67,7 @@ describe('getTokenExpiry', () => {
   });
 });
 
-// ── isLoggedIn ────────────────────────────────────────────────────────────────
+// -- isLoggedIn ----------------------------------------------------------------
 
 describe('isLoggedIn', () => {
   beforeEach(() => localStorage.clear());
@@ -89,7 +89,7 @@ describe('isLoggedIn', () => {
   });
 });
 
-// ── terminalWsUrl ─────────────────────────────────────────────────────────────
+// -- terminalWsUrl -------------------------------------------------------------
 
 describe('terminalWsUrl', () => {
   const originalLocation = window.location;
@@ -133,7 +133,7 @@ describe('terminalWsUrl', () => {
   });
 });
 
-// ── request (via global fetch mock) ──────────────────────────────────────────
+// -- request (via global fetch mock) ------------------------------------------
 
 describe('request (via login helper)', () => {
   beforeEach(() => localStorage.clear());
@@ -190,7 +190,7 @@ describe('request (via login helper)', () => {
   });
 });
 
-// ── FTP / FTPS API functions ──────────────────────────────────────────────────
+// -- FTP / FTPS API functions --------------------------------------------------
 
 describe('FTP API functions', () => {
   beforeEach(() => {

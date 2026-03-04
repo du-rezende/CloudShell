@@ -23,7 +23,7 @@ from backend.services.ssh import (
 )
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _make_mock_conn() -> MagicMock:
     """Return a mock asyncssh connection that supports close() and wait_closed()."""
@@ -49,7 +49,7 @@ def _cleanup_session(session_id: str) -> None:
     ssh_module._sessions.pop(session_id, None)
 
 
-# ── create_session ────────────────────────────────────────────────────────────
+# -- create_session ------------------------------------------------------------
 
 async def test_create_session_stores_entry():
     """create_session must add an entry to _sessions on success."""
@@ -137,7 +137,7 @@ async def test_create_session_propagates_oserror():
             )
 
 
-# ── close_session ─────────────────────────────────────────────────────────────
+# -- close_session -------------------------------------------------------------
 
 async def test_close_session_removes_entry():
     """close_session must remove the session from _sessions."""
@@ -166,7 +166,7 @@ async def test_close_session_calls_conn_close():
     conn.close.assert_called_once()  # type: ignore[attr-defined]
 
 
-# ── get_session_meta ──────────────────────────────────────────────────────────
+# -- get_session_meta ----------------------------------------------------------
 
 def test_get_session_meta_returns_stored_values():
     """get_session_meta must return the device_label, cloudshell_user and source_ip."""
@@ -205,7 +205,7 @@ def test_get_session_meta_null_source_ip():
         _cleanup_session(session_id)
 
 
-# ── _ws_error ─────────────────────────────────────────────────────────────────
+# -- _ws_error -----------------------------------------------------------------
 
 async def test_ws_error_sends_binary_frame():
     """_ws_error must send a binary frame containing the error message."""

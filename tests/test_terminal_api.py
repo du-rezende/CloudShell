@@ -24,7 +24,7 @@ from backend.models.audit import AuditLog
 from backend.services.audit import ACTION_SESSION_STARTED
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _password_device_payload(**overrides) -> dict:
     return {
@@ -43,7 +43,7 @@ def _make_fake_session_id() -> str:
     return str(uuid.uuid4())
 
 
-# ── POST /api/terminal/session/{device_id} ────────────────────────────────────
+# -- POST /api/terminal/session/{device_id} ------------------------------------
 
 async def test_open_session_requires_auth(client, db_session):
     """POST /api/terminal/session/{id} without a token must return 401."""
@@ -164,7 +164,7 @@ async def test_open_session_ssh_connection_lost_returns_504(auth_client):
     assert resp.status_code == 504
 
 
-# ── WebSocket /api/terminal/ws/{session_id} ───────────────────────────────────
+# -- WebSocket /api/terminal/ws/{session_id} -----------------------------------
 
 async def test_ws_no_token_closes_4001(client):
     """WebSocket connection without a token query-param must be closed with code 4001."""

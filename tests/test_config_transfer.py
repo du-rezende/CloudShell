@@ -24,7 +24,7 @@ from backend.services.crypto import decrypt, generate_key_pair, load_decrypted_k
 from backend.config import get_settings
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _password_device(name: str = "srv", hostname: str = "10.0.0.1", port: int = 22) -> dict:
     return {
@@ -50,7 +50,7 @@ def _key_device(pem: str, name: str = "key-srv", hostname: str = "10.0.0.2", por
     }
 
 
-# ── Export ────────────────────────────────────────────────────────────────────
+# -- Export --------------------------------------------------------------------
 
 async def test_export_requires_auth(client):
     """Unauthenticated GET /api/config/export must return 401."""
@@ -118,7 +118,7 @@ async def test_export_multiple_devices(auth_client):
     assert len(data["devices"]) == 3
 
 
-# ── Import ────────────────────────────────────────────────────────────────────
+# -- Import --------------------------------------------------------------------
 
 def _upload_json(data: dict) -> dict:
     """Build the files dict for httpx multipart upload."""
@@ -352,7 +352,7 @@ async def test_export_then_import_roundtrip(auth_client):
     assert recovered == pem
 
 
-# ── Export: decryption failure is handled gracefully ─────────────────────────
+# -- Export: decryption failure is handled gracefully -------------------------
 
 async def test_export_decryption_failure_omits_secret(auth_client):
     """When decryption raises, the device is still exported but with null credentials."""
@@ -384,7 +384,7 @@ async def test_export_key_decryption_failure_omits_key(auth_client):
     assert data["devices"][0]["private_key"] is None
 
 
-# ── Import: missing credential fields ────────────────────────────────────────
+# -- Import: missing credential fields ----------------------------------------
 
 async def test_import_password_device_missing_password(auth_client):
     """A password-auth entry without a password value is counted as an error."""
@@ -440,7 +440,7 @@ async def test_import_key_device_missing_private_key(auth_client):
     assert any("private_key" in m for m in result["messages"])
 
 
-# ── Import: error recovery — subsequent devices are still processed ───────────
+# -- Import: error recovery — subsequent devices are still processed -----------
 
 async def test_import_error_recovery_continues(auth_client):
     """An error on one device does not prevent the remaining devices from being imported."""
@@ -495,7 +495,7 @@ async def test_import_error_recovery_continues(auth_client):
     assert "bad-middle" not in names
 
 
-# ── Import: exported_at field is present in export bundle ────────────────────
+# -- Import: exported_at field is present in export bundle --------------------
 
 async def test_export_bundle_has_exported_at(auth_client):
     """The export bundle includes a non-empty exported_at ISO timestamp."""
@@ -506,7 +506,7 @@ async def test_export_bundle_has_exported_at(auth_client):
     assert data["exported_at"]  # non-empty
 
 
-# ── Import: connection_type is preserved ─────────────────────────────────────
+# -- Import: connection_type is preserved -------------------------------------
 
 @pytest.mark.parametrize("conn_type", ["ssh", "sftp", "ftp", "ftps"])
 async def test_import_preserves_connection_type(auth_client, conn_type: str):
@@ -537,7 +537,7 @@ async def test_import_preserves_connection_type(auth_client, conn_type: str):
     assert devices[0]["connection_type"] == conn_type
 
 
-# ── Import: passwords are correctly re-encrypted ─────────────────────────────
+# -- Import: passwords are correctly re-encrypted -----------------------------
 
 async def test_import_password_is_reencrypted(auth_client, db_session):
     """Imported password is stored encrypted; decrypting it yields the original value."""
@@ -574,7 +574,7 @@ async def test_import_password_is_reencrypted(auth_client, db_session):
     assert crypto_decrypt(device.encrypted_password) == "super-secret-123"
 
 
-# ── Direct unit tests for the export helper ───────────────────────────────────
+# -- Direct unit tests for the export helper -----------------------------------
 
 async def test_build_export_bundle_password_device(db_session):
     """_build_export_bundle decrypts and returns the password for a password-auth device."""
@@ -651,7 +651,7 @@ async def test_build_export_bundle_decrypt_failure_omits_secret(db_session):
     assert bundle.devices[0].password is None  # omitted due to error
 
 
-# ── Direct unit tests for _build_export_response ─────────────────────────────
+# -- Direct unit tests for _build_export_response -----------------------------
 
 async def test_build_export_response_returns_json_response(db_session):
     """_build_export_response returns a Response with correct content-type and disposition."""
@@ -693,7 +693,7 @@ async def test_build_export_response_body_is_valid_bundle(db_session):
     assert bundle.devices[0].password == "resp-pass"
 
 
-# ── Direct unit tests for _process_import_bundle ─────────────────────────────
+# -- Direct unit tests for _process_import_bundle -----------------------------
 
 async def test_process_import_bundle_password_device(db_session):
     """_process_import_bundle inserts a password-auth device and re-encrypts its password."""

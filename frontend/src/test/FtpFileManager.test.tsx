@@ -27,7 +27,7 @@ import { FtpFileManager } from '../components/FtpFileManager';
 import { ToastProvider } from '../components/Toast';
 import type { Device } from '../api/client';
 
-// ── API mocks ─────────────────────────────────────────────────────────────────
+// -- API mocks -----------------------------------------------------------------
 
 const mockOpenFtpSession  = vi.fn().mockResolvedValue('sess-ftp-1');
 const mockCloseFtpSession = vi.fn().mockResolvedValue(undefined);
@@ -53,7 +53,7 @@ vi.mock('../api/client', async (importOriginal) => {
   };
 });
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 const makeFtpDevice = (overrides: Partial<Device> = {}): Device => ({
   id: 5,
@@ -108,7 +108,7 @@ beforeEach(() => {
   mockFtpList.mockResolvedValue(defaultListResponse());
 });
 
-// ── Connecting state ──────────────────────────────────────────────────────────
+// -- Connecting state ----------------------------------------------------------
 
 describe('FtpFileManager — connecting state', () => {
   it('shows connecting spinner initially', () => {
@@ -125,7 +125,7 @@ describe('FtpFileManager — connecting state', () => {
   });
 });
 
-// ── Error state ───────────────────────────────────────────────────────────────
+// -- Error state ---------------------------------------------------------------
 
 describe('FtpFileManager — error state', () => {
   it('shows error message and Retry button when connection fails', async () => {
@@ -149,7 +149,7 @@ describe('FtpFileManager — error state', () => {
   });
 });
 
-// ── Directory listing ─────────────────────────────────────────────────────────
+// -- Directory listing ---------------------------------------------------------
 
 describe('FtpFileManager — directory listing', () => {
   it('renders file entries after successful connection', async () => {
@@ -190,7 +190,7 @@ describe('FtpFileManager — directory listing', () => {
   });
 });
 
-// ── Protocol badge ────────────────────────────────────────────────────────────
+// -- Protocol badge ------------------------------------------------------------
 
 describe('FtpFileManager — protocol badge', () => {
   it('shows "FTP" badge for ftp device', async () => {
@@ -206,7 +206,7 @@ describe('FtpFileManager — protocol badge', () => {
   });
 });
 
-// ── Navigation ────────────────────────────────────────────────────────────────
+// -- Navigation ----------------------------------------------------------------
 
 describe('FtpFileManager — navigation', () => {
   it('clicking a folder navigates into it', async () => {
@@ -237,7 +237,7 @@ describe('FtpFileManager — navigation', () => {
   });
 });
 
-// ── Download ──────────────────────────────────────────────────────────────────
+// -- Download ------------------------------------------------------------------
 
 describe('FtpFileManager — download', () => {
   it('calls ftpDownload when download button is clicked', async () => {
@@ -250,7 +250,7 @@ describe('FtpFileManager — download', () => {
   });
 });
 
-// ── Delete ────────────────────────────────────────────────────────────────────
+// -- Delete --------------------------------------------------------------------
 
 describe('FtpFileManager — delete flow', () => {
   it('opens delete confirm modal when delete button is clicked', async () => {
@@ -286,7 +286,7 @@ describe('FtpFileManager — delete flow', () => {
   });
 });
 
-// ── Rename ────────────────────────────────────────────────────────────────────
+// -- Rename --------------------------------------------------------------------
 
 describe('FtpFileManager — rename flow', () => {
   it('opens rename modal when rename button is clicked', async () => {
@@ -316,7 +316,7 @@ describe('FtpFileManager — rename flow', () => {
   });
 });
 
-// ── Mkdir ─────────────────────────────────────────────────────────────────────
+// -- Mkdir ---------------------------------------------------------------------
 
 describe('FtpFileManager — mkdir flow', () => {
   it('opens new folder modal when "New folder" toolbar button is clicked', async () => {
@@ -339,7 +339,7 @@ describe('FtpFileManager — mkdir flow', () => {
   });
 });
 
-// ── Unmount cleanup ───────────────────────────────────────────────────────────
+// -- Unmount cleanup -----------------------------------------------------------
 
 describe('FtpFileManager — cleanup', () => {
   it('calls closeFtpSession when the component unmounts', async () => {

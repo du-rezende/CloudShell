@@ -11,7 +11,7 @@
  *   - the "assign" dropdown when the cell is empty
  *
  * Props
- * ──────
+ * ------
  *  index          Cell index (row * cols + col)
  *  isFocused      Whether this cell has the "active" highlight
  *  assignedKey    The key currently assigned to this cell (null = empty)
@@ -90,10 +90,10 @@ export function GridCell<TKey, TItem>({
     >
       {isAssigned ? (
         <>
-          {/* ── Assigned: empty slot — content is portalled in from outside ── */}
+          {/* -- Assigned: empty slot — content is portalled in from outside -- */}
           <div ref={contentRef} className="flex-1 overflow-hidden" />
 
-          {/* ── Unassign button (top-right corner overlay) ────────────────── */}
+          {/* -- Unassign button (top-right corner overlay) ------------------ */}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -109,7 +109,7 @@ export function GridCell<TKey, TItem>({
           </button>
         </>
       ) : (
-        /* ── Empty: content slot hidden + assign picker ─────────────────── */
+        /* -- Empty: content slot hidden + assign picker ------------------- */
         <>
           <div ref={contentRef} className="hidden" />
           <div className="flex-1 flex items-center justify-center bg-surface-50 relative">

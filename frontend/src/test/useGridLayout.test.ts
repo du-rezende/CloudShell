@@ -263,7 +263,7 @@ describe('useGridLayout — autoPlace', () => {
   });
 });
 
-// ── Regression tests for tab-navigation bug ──────────────────────────────────
+// -- Regression tests for tab-navigation bug ----------------------------------
 //
 // Scenario: single-tile mode (1x1 layout).
 //   1. User opens device A  → autoPlace fills cell 0 with key 1.

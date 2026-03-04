@@ -40,7 +40,7 @@ from backend.services.audit import ACTION_SESSION_ENDED, ACTION_SESSION_STARTED
 from fastapi import HTTPException, WebSocketDisconnect
 
 
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeRequest:
     """Minimal Request stand-in that satisfies get_client_ip."""
@@ -95,7 +95,7 @@ def _key_device(has_key: bool = True) -> Device:
     return d
 
 
-# ── open_session ──────────────────────────────────────────────────────────────
+# -- open_session --------------------------------------------------------------
 
 async def test_open_session_direct_device_not_found():
     """open_session raises 404 when the device does not exist in the DB."""
@@ -319,7 +319,7 @@ async def test_open_session_direct_asyncssh_error_returns_502():
     assert exc_info.value.status_code == 502
 
 
-# ── terminal_ws ───────────────────────────────────────────────────────────────
+# -- terminal_ws ---------------------------------------------------------------
 
 def _make_mock_ws(token: str | None = None, headers: dict | None = None) -> MagicMock:
     """Build a minimal WebSocket mock."""

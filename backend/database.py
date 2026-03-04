@@ -33,7 +33,7 @@ engine = get_engine()
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
-# ── Column migrations ─────────────────────────────────────────────────────────
+# -- Column migrations ---------------------------------------------------------
 # Each entry is (table, column, sql_type, default_literal).
 # If the column is missing it is added with the given DEFAULT so that existing
 # rows are backfilled automatically (SQLite respects DEFAULT on ADD COLUMN).

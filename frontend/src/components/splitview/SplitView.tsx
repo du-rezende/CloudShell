@@ -8,7 +8,7 @@
  * panels into them without ever unmounting the panel components.
  *
  * Props
- * ──────
+ * ------
  *  layout         Current GridLayout (rows x cols)
  *  assignments    CellAssignmentMap<TKey> from useGridLayout
  *  items          All available items (e.g. open tabs)

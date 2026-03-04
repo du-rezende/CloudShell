@@ -20,7 +20,7 @@ from backend.models.audit import AuditLog
 from backend.services.audit import ACTION_LOGIN, ACTION_SESSION_STARTED
 
 
-# ── Authentication guard ──────────────────────────────────────────────────────
+# -- Authentication guard ------------------------------------------------------
 
 async def test_audit_logs_requires_auth(client):
     """Unauthenticated request to /api/audit/logs must return 401."""
@@ -34,7 +34,7 @@ async def test_audit_prune_requires_auth(client):
     assert resp.status_code == 401
 
 
-# ── GET /api/audit/logs ───────────────────────────────────────────────────────
+# -- GET /api/audit/logs -------------------------------------------------------
 
 async def test_audit_logs_empty(auth_client):
     """The log only contains the LOGIN entry written by the auth_client fixture."""
@@ -156,7 +156,7 @@ async def test_audit_logs_source_ip_can_be_null(auth_client, db_session):
     assert target["source_ip"] is None
 
 
-# ── POST /api/audit/prune ─────────────────────────────────────────────────────
+# -- POST /api/audit/prune -----------------------------------------------------
 
 async def test_audit_prune_deletes_old_entries(auth_client, db_session):
     """POST /api/audit/prune removes entries older than AUDIT_RETENTION_DAYS."""

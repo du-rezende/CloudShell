@@ -40,7 +40,7 @@ from backend.routers.auth import (
 from backend.services.audit import ACTION_LOGIN, ACTION_LOGOUT, ACTION_PASSWORD_CHANGED
 
 
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeRequest:
     """Minimal Request duck-type for handlers that call get_client_ip(request)."""
@@ -98,7 +98,7 @@ def _token_with_bad_bid() -> str:
     return jose_jwt.encode(payload, settings.secret_key, algorithm=ALGORITHM)
 
 
-# ── get_current_user ──────────────────────────────────────────────────────────
+# -- get_current_user ----------------------------------------------------------
 
 async def test_get_current_user_invalid_jwt_raises_401():
     """get_current_user raises 401 when the token cannot be decoded (JWTError path)."""
@@ -145,7 +145,7 @@ async def test_get_current_user_valid_token_returns_username():
     assert username == "admin"
 
 
-# ── _get_payload ──────────────────────────────────────────────────────────────
+# -- _get_payload --------------------------------------------------------------
 
 async def test_get_payload_boot_id_mismatch_raises_401():
     """_get_payload raises 401 when the token's bid does not match BOOT_ID."""
@@ -184,7 +184,7 @@ async def test_get_payload_valid_token_returns_dict():
     assert "jti" in payload
 
 
-# ── login ─────────────────────────────────────────────────────────────────────
+# -- login ---------------------------------------------------------------------
 
 async def test_login_direct_success():
     """login returns a Token with correct fields when credentials are valid."""
@@ -223,7 +223,7 @@ async def test_login_direct_bad_credentials_raises_401():
     assert exc_info.value.status_code == 401
 
 
-# ── refresh ───────────────────────────────────────────────────────────────────
+# -- refresh -------------------------------------------------------------------
 
 async def test_refresh_direct_success():
     """refresh revokes the old token, prunes, and issues a fresh Token."""
@@ -248,7 +248,7 @@ async def test_refresh_direct_success():
     mock_prune.assert_awaited_once()
 
 
-# ── logout ────────────────────────────────────────────────────────────────────
+# -- logout --------------------------------------------------------------------
 
 async def test_logout_direct_no_jti_returns_early():
     """logout returns early without committing when the decoded payload has no jti."""
@@ -333,7 +333,7 @@ async def test_logout_direct_already_revoked_skips_add():
     assert not db.committed  # no commit because nothing was added
 
 
-# ── change_password ───────────────────────────────────────────────────────────
+# -- change_password -----------------------------------------------------------
 
 async def test_change_password_direct_no_existing_row():
     """change_password creates a new AdminCredential row when none exists."""
@@ -394,7 +394,7 @@ async def test_change_password_direct_short_password_raises_422():
     assert exc_info.value.status_code == 422
 
 
-# ── me ────────────────────────────────────────────────────────────────────────
+# -- me ------------------------------------------------------------------------
 
 async def test_me_direct_returns_username_and_expiry():
     """me returns MeOut with the correct username and a future expires_at."""

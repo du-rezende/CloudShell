@@ -2,7 +2,7 @@
 routers/ftp.py — REST endpoints for FTP/FTPS file manager sessions.
 
 Session lifecycle
-─────────────────
+-----------------
 POST /ftp/session/{device_id}    → open FTP/FTPS session, returns session_id
 GET  /ftp/{session_id}/list      → list directory contents
 GET  /ftp/{session_id}/download  → download a file
@@ -47,7 +47,7 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/ftp", tags=["ftp"])
 
 
-# ── Session management ────────────────────────────────────────────────────────
+# -- Session management --------------------------------------------------------
 
 
 @router.post("/session/{device_id}")
@@ -126,7 +126,7 @@ async def close_session(
     )
 
 
-# ── File operations ───────────────────────────────────────────────────────────
+# -- File operations -----------------------------------------------------------
 
 
 @router.get("/{session_id}/list")

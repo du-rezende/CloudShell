@@ -10,7 +10,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
-# ── Force test environment variables BEFORE any backend module is imported ────
+# -- Force test environment variables BEFORE any backend module is imported ----
 os.environ.setdefault("SECRET_KEY",           "test-secret-key-do-not-use-in-prod")
 os.environ.setdefault("ADMIN_USER",           "admin")
 os.environ.setdefault("ADMIN_PASSWORD",       "admin")
@@ -18,7 +18,7 @@ os.environ.setdefault("TOKEN_TTL_HOURS",      "1")
 os.environ.setdefault("DATA_DIR",             "/tmp/cloudshell-pytest")
 os.environ.setdefault("AUDIT_RETENTION_DAYS", "7")
 
-# ── Backend imports (after env vars are set) ──────────────────────────────────
+# -- Backend imports (after env vars are set) ----------------------------------
 from backend.config import get_settings  # noqa: E402
 from backend.database import Base, get_db  # noqa: E402
 from backend.main import app  # noqa: E402

@@ -45,7 +45,7 @@ def _get_boot_id() -> str:
     return BOOT_ID
 
 
-# ── Pydantic schemas ──────────────────────────────────────────────────────────
+# -- Pydantic schemas ----------------------------------------------------------
 
 class Token(BaseModel):
     access_token: str
@@ -63,7 +63,7 @@ class ChangePasswordIn(BaseModel):
     new_password: str
 
 
-# ── Internal helpers ──────────────────────────────────────────────────────────
+# -- Internal helpers ----------------------------------------------------------
 
 def _make_token(username: str) -> tuple[str, datetime, str]:
     """Return (encoded_jwt, expiry_datetime, jti)."""
@@ -104,7 +104,7 @@ async def _prune_expired_tokens(db: AsyncSession) -> None:
     await db.commit()
 
 
-# ── Shared dependency ─────────────────────────────────────────────────────────
+# -- Shared dependency ---------------------------------------------------------
 
 async def get_current_user(
     token: str = Depends(oauth2_scheme),
@@ -174,7 +174,7 @@ async def _get_payload(
     return payload
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# -- Routes --------------------------------------------------------------------
 
 @router.post("/token", response_model=Token)
 async def login(

@@ -42,7 +42,7 @@ from backend.models.audit import AuditLog
 from backend.services.audit import ACTION_SESSION_ENDED, ACTION_SESSION_STARTED
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 
 def _ftp_device_payload(**overrides) -> dict:
@@ -117,7 +117,7 @@ def _make_fake_ftp_client() -> MagicMock:
     return client
 
 
-# ── Session open ──────────────────────────────────────────────────────────────
+# -- Session open --------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -205,7 +205,7 @@ async def test_open_ftps_session_success(auth_client):
     assert "session_id" in resp.json()
 
 
-# ── Session close ─────────────────────────────────────────────────────────────
+# -- Session close -------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -233,7 +233,7 @@ async def test_close_ftp_session_success_writes_audit(auth_client, db_session):
     assert result.scalars().first() is not None
 
 
-# ── Directory listing ─────────────────────────────────────────────────────────
+# -- Directory listing ---------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -267,7 +267,7 @@ async def test_list_dir_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Download ──────────────────────────────────────────────────────────────────
+# -- Download ------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -302,7 +302,7 @@ async def test_download_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Upload ────────────────────────────────────────────────────────────────────
+# -- Upload --------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -336,7 +336,7 @@ async def test_upload_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Delete ────────────────────────────────────────────────────────────────────
+# -- Delete --------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -387,7 +387,7 @@ async def test_delete_dir_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Rename ────────────────────────────────────────────────────────────────────
+# -- Rename --------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -419,7 +419,7 @@ async def test_rename_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Mkdir ─────────────────────────────────────────────────────────────────────
+# -- Mkdir ---------------------------------------------------------------------
 
 
 @pytest.mark.asyncio
@@ -447,7 +447,7 @@ async def test_mkdir_success(auth_client):
     await auth_client.delete(f"/api/ftp/session/{session_id}")
 
 
-# ── Device CRUD: ftp / ftps connection types persisted ───────────────────────
+# -- Device CRUD: ftp / ftps connection types persisted -----------------------
 
 
 @pytest.mark.asyncio
@@ -467,7 +467,7 @@ async def test_device_ftps_connection_type_persisted(auth_client):
     assert device["connection_type"] == "ftps"
 
 
-# ── Session open: specific exception branches ─────────────────────────────────
+# -- Session open: specific exception branches ---------------------------------
 
 
 @pytest.mark.asyncio
@@ -529,7 +529,7 @@ async def test_close_session_unknown_id_uses_fallback_audit_message(auth_client,
     assert "unknown-" in (entry.detail or "")
 
 
-# ── File operation 500 error paths ────────────────────────────────────────────
+# -- File operation 500 error paths --------------------------------------------
 
 async def _open_session(auth_client, fake_client) -> str:
     """Helper: create a device and open a session with the given fake client."""
@@ -643,7 +643,7 @@ async def test_mkdir_generic_error_returns_500(auth_client):
     await auth_client.delete(f"/api/ftp/session/{sid}")
 
 
-# ── File operation ValueError (404) paths ─────────────────────────────────────
+# -- File operation ValueError (404) paths -------------------------------------
 
 
 @pytest.mark.asyncio
