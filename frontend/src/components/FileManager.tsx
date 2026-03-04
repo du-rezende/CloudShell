@@ -301,6 +301,11 @@ export function FileManager({ device }: FileManagerProps) {
           ))}
         </div>
 
+        {/* Protocol badge */}
+        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-purple-700/60 bg-purple-900/30 text-purple-300 flex-shrink-0">
+          SFTP
+        </span>
+
         {/* Upload */}
         <input
           ref={fileInputRef}

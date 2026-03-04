@@ -260,6 +260,11 @@ export function Terminal({ device }: TerminalProps) {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* SSH protocol badge */}
+          <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded border border-green-700/60 bg-green-900/30 text-green-300 flex-shrink-0">
+            SSH
+          </span>
+
           {/* Status badge */}
           <div className={`flex items-center gap-1.5 text-xs border rounded px-2 py-0.5 ${b.cls}`}>
             {b.icon}
