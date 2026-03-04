@@ -29,7 +29,7 @@ export function Terminal({ device }: TerminalProps) {
   const toastRef = useRef(toast);
   useEffect(() => { toastRef.current = toast; });
 
-  // ── Build the xterm instance once ──────────────────────────────────────────
+  // -- Build the xterm instance once ------------------------------------------
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -70,7 +70,7 @@ export function Terminal({ device }: TerminalProps) {
     return () => { term.dispose(); };
   }, []);
 
-  // ── Connect / reconnect ─────────────────────────────────────────────────────
+  // -- Connect / reconnect -----------------------------------------------------
   const connect = useCallback(async () => {
     const term = xtermRef.current;
     const fit  = fitRef.current;
@@ -163,7 +163,7 @@ export function Terminal({ device }: TerminalProps) {
 
   useEffect(() => { connect(); }, [connect]);
 
-  // ── Persistent ResizeObserver — handles all size-change scenarios ───────────
+  // -- Persistent ResizeObserver — handles all size-change scenarios -----------
   // Kept separate from connect() so it survives reconnects and fires even
   // when the panel is shown for the first time after being hidden in the pool.
   //
@@ -217,7 +217,7 @@ export function Terminal({ device }: TerminalProps) {
     };
   }, []);
 
-  // ── Explicit cleanup on unmount (tab close) ──────────────────────────────────
+  // -- Explicit cleanup on unmount (tab close) ----------------------------------
   // Without this, closing the tab only removes the DOM node; the WebSocket
   // lingers in a half-open state and the server never receives a clean close
   // frame, so SESSION_ENDED is not written until the connection times out.
@@ -231,13 +231,13 @@ export function Terminal({ device }: TerminalProps) {
     };
   }, []);
 
-  // ── Copy session info ────────────────────────────────────────────────────────
+  // -- Copy session info --------------------------------------------------------
   const copyInfo = () => {
     navigator.clipboard.writeText(`${device.username}@${device.hostname}:${device.port}`);
     toastRef.current.info("Copied to clipboard");
   };
 
-  // ── Status badge ────────────────────────────────────────────────────────────
+  // -- Status badge ------------------------------------------------------------
   const badge: Record<ConnState, { icon: React.ReactNode; label: string; cls: string }> = {
     connecting:   { icon: <Loader  size={12} className="animate-spin" />, label: "Connecting",   cls: "text-yellow-400 border-yellow-700" },
     connected:    { icon: <Wifi    size={12} />,                          label: "Connected",    cls: "text-green-400  border-green-700"  },

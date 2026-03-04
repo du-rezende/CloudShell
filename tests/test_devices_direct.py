@@ -34,7 +34,7 @@ from backend.routers.devices import (
 from backend.services.crypto import generate_key_pair
 
 
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeDB:
     """Minimal AsyncSession duck-type that records calls for assertions."""
@@ -76,7 +76,7 @@ class _FakeDB:
         self.deleted.append(obj)
 
 
-# ── list_devices ──────────────────────────────────────────────────────────────
+# -- list_devices --------------------------------------------------------------
 
 async def test_list_devices_direct_empty():
     """list_devices returns an empty list when no devices exist."""
@@ -94,7 +94,7 @@ async def test_list_devices_direct_returns_items():
     assert result == [dev1, dev2]
 
 
-# ── create_device – password path ────────────────────────────────────────────
+# -- create_device – password path --------------------------------------------
 
 async def test_create_device_password_missing_raises_400():
     """create_device with auth_type=password but no password must raise HTTP 400."""
@@ -174,7 +174,7 @@ async def test_create_device_key_success():
     assert device.key_filename is not None
 
 
-# ── get_device ────────────────────────────────────────────────────────────────
+# -- get_device ----------------------------------------------------------------
 
 async def test_get_device_not_found():
     """get_device raises HTTP 404 when the device does not exist in the DB."""
@@ -192,7 +192,7 @@ async def test_get_device_found():
     assert result is dev
 
 
-# ── update_device ─────────────────────────────────────────────────────────────
+# -- update_device -------------------------------------------------------------
 
 async def test_update_device_not_found():
     """update_device raises HTTP 404 when the device does not exist."""
@@ -290,7 +290,7 @@ async def test_update_device_commits_and_refreshes():
     assert device in db.refreshed
 
 
-# ── delete_device ─────────────────────────────────────────────────────────────
+# -- delete_device -------------------------------------------------------------
 
 async def test_delete_device_not_found():
     """delete_device raises HTTP 404 when the device does not exist."""

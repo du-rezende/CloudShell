@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/audit", tags=["audit"])
 
 
-# ── Pydantic schemas ──────────────────────────────────────────────────────────
+# -- Pydantic schemas ----------------------------------------------------------
 
 class AuditLogEntry(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -48,7 +48,7 @@ class PruneResult(BaseModel):
     retention_days: int
 
 
-# ── Routes ────────────────────────────────────────────────────────────────────
+# -- Routes --------------------------------------------------------------------
 
 @router.get("/logs", response_model=AuditLogPage)
 async def list_audit_logs(

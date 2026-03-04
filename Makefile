@@ -22,7 +22,7 @@ help:
 	@echo "  make test-all         Run tests for Python 3.11, 3.12, and 3.13"
 	@echo ""
 
-# ── Local development (no Docker) ─────────────────────────────────────────────
+# -- Local development (no Docker) ---------------------------------------------
 
 dev:
 	@echo "Starting backend..."
@@ -32,7 +32,7 @@ dev:
 	@echo "Starting frontend dev server..."
 	cd frontend && npm run dev
 
-# ── Docker ────────────────────────────────────────────────────────────────────
+# -- Docker --------------------------------------------------------------------
 
 build: build-backend build-frontend
 
@@ -64,7 +64,7 @@ restart:
 shell:
 	$(COMPOSE) exec backend /bin/bash
 
-# ── Tests ─────────────────────────────────────────────────────────────────────
+# -- Tests ---------------------------------------------------------------------
 
 _TEST_ENV = DATA_DIR=/tmp/cloudshell-test-$$(date +%s) \
             SECRET_KEY=ci-test-secret \

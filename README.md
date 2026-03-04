@@ -44,6 +44,7 @@ Supports connections audit:
 - **Concurrent connections**: support multiple simultaneous SSH sessions
 - **SFTP file manager**: browse, upload, download, rename, and delete files on any device directly from the browser.
 - **FTP/FTPS file manager**: same convenient web-based file operations over plain FTP or explicit FTPS (AUTH TLS).
+- **Configuration import/export**: easily import and export device configurations in standard JSON format.
 
 Please note: all sessions are initiated on the server side and not the client.
 
@@ -54,7 +55,7 @@ Please note: all sessions are initiated on the server side and not the client.
 ```yaml
 services:
 
-  # ── Backend: FastAPI + AsyncSSH ─────────────────────────────────────────────
+  # -- Backend: FastAPI + AsyncSSH ---------------------------------------------
   backend:
     image: ghcr.io/iu2frl/cloudshell-backend:latest
     restart: unless-stopped
@@ -76,7 +77,7 @@ services:
     networks:
       - internal
 
-  # ── Frontend: Nginx + React bundle + reverse proxy ──────────────────────────
+  # -- Frontend: Nginx + React bundle + reverse proxy --------------------------
   frontend:
     image: ghcr.io/iu2frl/cloudshell-frontend:latest
     restart: unless-stopped

@@ -156,7 +156,7 @@ export function Dashboard({ onLogout }: Props) {
 
   return (
     <div className="flex flex-col h-screen bg-surface overflow-hidden">
-      {/* ── Top bar ────────────────────────────────────────────────────────── */}
+      {/* -- Top bar ---------------------------------------------------------- */}
       {/*
         Responsive layout (single DOM, CSS-only reflow):
         - Mobile  : flex-wrap → two rows.
@@ -265,7 +265,7 @@ export function Dashboard({ onLogout }: Props) {
         </div>
       </header>
 
-      {/* ── Body ───────────────────────────────────────────────────────────── */}
+      {/* -- Body ------------------------------------------------------------- */}
       <div className="flex flex-1 overflow-hidden">
         <DeviceList
           devices={devices}
@@ -291,7 +291,7 @@ export function Dashboard({ onLogout }: Props) {
           onRefresh={fetchDevices}
         />
 
-        {/* ── Split-view main area ─────────────────────────────────────────── */}
+        {/* -- Split-view main area ------------------------------------------- */}
         <main className="flex-1 overflow-hidden p-3 min-w-0">
           {/*
             All Terminal / FileManager instances live permanently in the hidden

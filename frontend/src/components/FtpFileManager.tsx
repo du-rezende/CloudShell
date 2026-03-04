@@ -78,7 +78,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
 
   const protocol = device.connection_type === "ftps" ? "FTPS" : "FTP";
 
-  // ── Session lifecycle ────────────────────────────────────────────────────
+  // -- Session lifecycle ----------------------------------------------------
 
   const connect = useCallback(async () => {
     setConnecting(true);
@@ -104,7 +104,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     };
   }, [connect]);
 
-  // ── Directory listing ────────────────────────────────────────────────────
+  // -- Directory listing ----------------------------------------------------
 
   const loadDir = useCallback(
     async (targetPath: string, sid?: string | null) => {
@@ -129,7 +129,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     if (sessionId) loadDir("/", sessionId);
   }, [sessionId, loadDir]);
 
-  // ── Navigation ───────────────────────────────────────────────────────────
+  // -- Navigation -----------------------------------------------------------
 
   const navigateTo = (targetPath: string) => loadDir(targetPath);
 
@@ -139,7 +139,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     navigateTo("/" + parts.join("/") || "/");
   };
 
-  // ── Download ─────────────────────────────────────────────────────────────
+  // -- Download -------------------------------------------------------------
 
   const handleDownload = async (entry: SftpEntry) => {
     if (!sessionId) return;
@@ -150,7 +150,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     }
   };
 
-  // ── Upload ───────────────────────────────────────────────────────────────
+  // -- Upload ---------------------------------------------------------------
 
   const handleUploadChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -171,7 +171,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     await loadDir(path);
   };
 
-  // ── Delete ───────────────────────────────────────────────────────────────
+  // -- Delete ---------------------------------------------------------------
 
   const confirmDelete = (entry: SftpEntry) => setModal({ type: "delete", entry });
 
@@ -187,7 +187,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     }
   };
 
-  // ── Rename ───────────────────────────────────────────────────────────────
+  // -- Rename ---------------------------------------------------------------
 
   const [renameValue, setRenameValue] = useState("");
 
@@ -210,7 +210,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     }
   };
 
-  // ── Mkdir ────────────────────────────────────────────────────────────────
+  // -- Mkdir ----------------------------------------------------------------
 
   const [mkdirValue, setMkdirValue] = useState("");
 
@@ -233,7 +233,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // -- Render ---------------------------------------------------------------
 
   if (connecting) {
     return (
@@ -260,7 +260,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
 
   return (
     <div className="h-full flex flex-col bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
-      {/* ── Toolbar ── */}
+      {/* -- Toolbar -- */}
       <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800 flex-shrink-0">
         {/* Navigate up */}
         <button
@@ -333,7 +333,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
         </button>
       </div>
 
-      {/* ── File table ── */}
+      {/* -- File table -- */}
       <div className="flex-1 overflow-auto">
         {loadingDir && entries.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -428,7 +428,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
         )}
       </div>
 
-      {/* ── Status bar ── */}
+      {/* -- Status bar -- */}
       <div className="flex items-center px-4 py-1.5 bg-slate-900 border-t border-slate-800 text-[11px] text-slate-600 flex-shrink-0">
         <span>{entries.length} item{entries.length !== 1 ? "s" : ""}</span>
         {uploadPct !== null && (
@@ -436,7 +436,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
         )}
       </div>
 
-      {/* ── Modals ── */}
+      {/* -- Modals -- */}
 
       {/* Rename modal */}
       {modal?.type === "rename" && (
@@ -497,7 +497,7 @@ export function FtpFileManager({ device }: FtpFileManagerProps) {
   );
 }
 
-// ── Reusable inline modal ─────────────────────────────────────────────────────
+// -- Reusable inline modal -----------------------------------------------------
 
 interface ModalProps {
   title: string;

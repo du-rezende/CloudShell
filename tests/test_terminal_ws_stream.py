@@ -21,7 +21,7 @@ from backend.services.audit import ACTION_SESSION_ENDED, ACTION_SESSION_STARTED
 from backend.services.crypto import generate_key_pair
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _password_device_payload(**overrides) -> dict:
     return {
@@ -47,7 +47,7 @@ def _key_device_payload(pem: str, **overrides) -> dict:
     }
 
 
-# ── POST /api/terminal/session/{id}: SSH key device path ─────────────────────
+# -- POST /api/terminal/session/{id}: SSH key device path ---------------------
 
 async def test_open_session_key_device_creates_session(auth_client):
     """A key-type device must succeed when asyncssh.connect is mocked."""
@@ -88,7 +88,7 @@ async def test_open_session_host_key_not_verifiable_returns_502(auth_client):
     assert "Host key not verifiable" in resp.json()["detail"]
 
 
-# ── WebSocket: valid token + working session → stream_session called ─────────
+# -- WebSocket: valid token + working session → stream_session called ---------
 
 async def test_ws_valid_token_accepted_and_stream_called(auth_client):
     """
@@ -141,7 +141,7 @@ async def test_ws_valid_token_accepted_and_stream_called(auth_client):
     mock_stream.assert_called_once_with(fake_session_id, mock_ws)
 
 
-# ── WebSocket: valid token but stream raises exception ────────────────────────
+# -- WebSocket: valid token but stream raises exception ------------------------
 
 async def test_ws_stream_exception_sends_error_frame(auth_client):
     """An unexpected exception in stream_session must be caught and an error frame sent."""
@@ -186,7 +186,7 @@ async def test_ws_stream_exception_sends_error_frame(auth_client):
     assert b"boom" in sent_data
 
 
-# ── WebSocket: X-Forwarded-For / X-Real-IP header parsing ────────────────────
+# -- WebSocket: X-Forwarded-For / X-Real-IP header parsing --------------------
 
 async def test_ws_x_real_ip_extracted(auth_client):
     """The client IP must be extracted from X-Real-IP when X-Forwarded-For is absent."""

@@ -17,8 +17,7 @@ import pytest
 from backend.models.audit import AuditLog
 from backend.routers.audit import list_audit_logs, trigger_prune
 
-
-# ── Fake helpers ──────────────────────────────────────────────────────────────
+# -- Fake helpers --------------------------------------------------------------
 
 class _FakeDB:
     """Minimal AsyncSession duck-type for audit handler tests."""
@@ -59,7 +58,7 @@ def _make_row(
     return row
 
 
-# ── list_audit_logs ───────────────────────────────────────────────────────────
+# -- list_audit_logs -----------------------------------------------------------
 
 async def test_list_audit_logs_empty():
     """list_audit_logs returns an empty AuditLogPage when there are no entries."""
@@ -116,7 +115,7 @@ async def test_list_audit_logs_null_source_ip_and_detail():
     assert entry.detail is None
 
 
-# ── trigger_prune ─────────────────────────────────────────────────────────────
+# -- trigger_prune -------------------------------------------------------------
 
 async def test_trigger_prune_returns_result():
     """trigger_prune calls prune_old_entries and returns a PruneResult."""

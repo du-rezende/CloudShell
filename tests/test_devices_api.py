@@ -13,7 +13,7 @@ Tests cover:
 from backend.services.crypto import generate_key_pair
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 def _password_device_payload(**overrides) -> dict:
     return {
@@ -39,7 +39,7 @@ def _key_device_payload(pem: str, **overrides) -> dict:
     }
 
 
-# ── GET /api/devices/ ─────────────────────────────────────────────────────────
+# -- GET /api/devices/ ---------------------------------------------------------
 
 async def test_list_devices_requires_auth(client):
     """Unauthenticated GET /api/devices/ must return 401."""
@@ -76,7 +76,7 @@ async def test_list_devices_sorted_by_name(auth_client):
     assert names == sorted(names)
 
 
-# ── POST /api/devices/ ────────────────────────────────────────────────────────
+# -- POST /api/devices/ --------------------------------------------------------
 
 async def test_create_password_device_returns_201(auth_client):
     """Creating a password-based device must return 201."""
@@ -151,7 +151,7 @@ async def test_create_device_requires_auth(client):
     assert resp.status_code == 401
 
 
-# ── GET /api/devices/{id} ─────────────────────────────────────────────────────
+# -- GET /api/devices/{id} -----------------------------------------------------
 
 async def test_get_device_returns_correct_data(auth_client):
     """GET /api/devices/{id} returns the exact device that was created."""
@@ -182,7 +182,7 @@ async def test_get_device_requires_auth(client):
     assert resp.status_code == 401
 
 
-# ── PUT /api/devices/{id} ─────────────────────────────────────────────────────
+# -- PUT /api/devices/{id} -----------------------------------------------------
 
 async def test_update_device_name(auth_client):
     """PUT /api/devices/{id} must update the device name."""
@@ -224,7 +224,7 @@ async def test_update_device_requires_auth(client):
     assert resp.status_code == 401
 
 
-# ── DELETE /api/devices/{id} ──────────────────────────────────────────────────
+# -- DELETE /api/devices/{id} --------------------------------------------------
 
 async def test_delete_device_returns_204(auth_client):
     """Deleting an existing device must return 204."""

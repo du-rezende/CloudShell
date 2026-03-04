@@ -80,7 +80,7 @@ export function FileManager({ device }: FileManagerProps) {
   const toastRef                      = useRef(toast);
   useEffect(() => { toastRef.current = toast; });
 
-  // ── Session lifecycle ────────────────────────────────────────────────────
+  // -- Session lifecycle ----------------------------------------------------
 
   const connect = useCallback(async () => {
     setConnecting(true);
@@ -106,7 +106,7 @@ export function FileManager({ device }: FileManagerProps) {
     };
   }, [connect]);
 
-  // ── Directory listing ────────────────────────────────────────────────────
+  // -- Directory listing ----------------------------------------------------
 
   const loadDir = useCallback(
     async (targetPath: string, sid?: string | null) => {
@@ -133,7 +133,7 @@ export function FileManager({ device }: FileManagerProps) {
     if (sessionId) loadDir("/", sessionId);
   }, [sessionId, loadDir]);
 
-  // ── Navigation ───────────────────────────────────────────────────────────
+  // -- Navigation -----------------------------------------------------------
 
   const navigateTo = (targetPath: string) => loadDir(targetPath);
 
@@ -143,7 +143,7 @@ export function FileManager({ device }: FileManagerProps) {
     navigateTo("/" + parts.join("/") || "/");
   };
 
-  // ── Download ─────────────────────────────────────────────────────────────
+  // -- Download -------------------------------------------------------------
 
   const handleDownload = async (entry: SftpEntry) => {
     if (!sessionId) return;
@@ -154,7 +154,7 @@ export function FileManager({ device }: FileManagerProps) {
     }
   };
 
-  // ── Upload ───────────────────────────────────────────────────────────────
+  // -- Upload ---------------------------------------------------------------
 
   const handleUploadChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
@@ -175,7 +175,7 @@ export function FileManager({ device }: FileManagerProps) {
     await loadDir(path);
   };
 
-  // ── Delete ───────────────────────────────────────────────────────────────
+  // -- Delete ---------------------------------------------------------------
 
   const confirmDelete = (entry: SftpEntry) => setModal({ type: "delete", entry });
 
@@ -191,7 +191,7 @@ export function FileManager({ device }: FileManagerProps) {
     }
   };
 
-  // ── Rename ───────────────────────────────────────────────────────────────
+  // -- Rename ---------------------------------------------------------------
 
   const [renameValue, setRenameValue] = useState("");
 
@@ -214,7 +214,7 @@ export function FileManager({ device }: FileManagerProps) {
     }
   };
 
-  // ── Mkdir ────────────────────────────────────────────────────────────────
+  // -- Mkdir ----------------------------------------------------------------
 
   const [mkdirValue, setMkdirValue] = useState("");
 
@@ -237,7 +237,7 @@ export function FileManager({ device }: FileManagerProps) {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  // -- Render ---------------------------------------------------------------
 
   if (connecting) {
     return (
@@ -264,7 +264,7 @@ export function FileManager({ device }: FileManagerProps) {
 
   return (
     <div className="h-full flex flex-col bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
-      {/* ── Toolbar ── */}
+      {/* -- Toolbar -- */}
       <div className="flex items-center gap-2 px-3 py-2 bg-slate-900 border-b border-slate-800 flex-shrink-0">
         {/* Navigate up */}
         <button
@@ -337,7 +337,7 @@ export function FileManager({ device }: FileManagerProps) {
         </button>
       </div>
 
-      {/* ── File table ── */}
+      {/* -- File table -- */}
       <div className="flex-1 overflow-auto">
         {loadingDir && entries.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -432,7 +432,7 @@ export function FileManager({ device }: FileManagerProps) {
         )}
       </div>
 
-      {/* ── Status bar ── */}
+      {/* -- Status bar -- */}
       <div className="flex items-center px-4 py-1.5 bg-slate-900 border-t border-slate-800 text-[11px] text-slate-600 flex-shrink-0">
         <span>{entries.length} item{entries.length !== 1 ? "s" : ""}</span>
         {uploadPct !== null && (
@@ -440,7 +440,7 @@ export function FileManager({ device }: FileManagerProps) {
         )}
       </div>
 
-      {/* ── Modals ── */}
+      {/* -- Modals -- */}
 
       {/* Rename modal */}
       {modal?.type === "rename" && (
@@ -501,7 +501,7 @@ export function FileManager({ device }: FileManagerProps) {
   );
 }
 
-// ── Reusable inline modal ─────────────────────────────────────────────────────
+// -- Reusable inline modal -----------------------------------------------------
 
 interface ModalProps {
   title: string;

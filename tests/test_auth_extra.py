@@ -31,7 +31,7 @@ from backend.routers.auth import (
 )
 
 
-# ── _is_revoked ───────────────────────────────────────────────────────────────
+# -- _is_revoked ---------------------------------------------------------------
 
 async def test_is_revoked_returns_false_for_unknown_jti(db_session):
     """_is_revoked must return False when the JTI is not in the revoked table."""
@@ -48,7 +48,7 @@ async def test_is_revoked_returns_true_for_known_jti(db_session):
     assert await _is_revoked(jti, db_session) is True
 
 
-# ── _prune_expired_tokens ─────────────────────────────────────────────────────
+# -- _prune_expired_tokens -----------------------------------------------------
 
 async def test_prune_expired_tokens_removes_past_tokens(db_session):
     """_prune_expired_tokens must delete tokens whose expires_at is in the past."""
@@ -76,7 +76,7 @@ async def test_prune_expired_tokens_empty_table(db_session):
     assert count == 0
 
 
-# ── GET /api/auth/me ──────────────────────────────────────────────────────────
+# -- GET /api/auth/me ----------------------------------------------------------
 
 async def test_me_returns_username_and_expiry(auth_client):
     """GET /api/auth/me must return the logged-in username and a future expires_at."""
@@ -94,7 +94,7 @@ async def test_me_requires_auth(client):
     assert resp.status_code == 401
 
 
-# ── POST /api/auth/refresh ────────────────────────────────────────────────────
+# -- POST /api/auth/refresh ----------------------------------------------------
 
 async def test_refresh_revokes_old_jti(auth_client, db_session):
     """After /refresh the original JTI must appear in the revoked-tokens table."""
@@ -125,7 +125,7 @@ async def test_refresh_new_token_is_different(auth_client):
     assert new_token != old_token
 
 
-# ── POST /api/auth/logout ─────────────────────────────────────────────────────
+# -- POST /api/auth/logout -----------------------------------------------------
 
 async def test_logout_with_invalid_token_is_no_op(client):
     """POST /api/auth/logout with a garbage token must not raise — just return."""
@@ -143,7 +143,7 @@ async def test_logout_idempotent(auth_client):
     assert resp2.status_code == 204
 
 
-# ── POST /api/auth/change-password — edge cases ───────────────────────────────
+# -- POST /api/auth/change-password — edge cases -------------------------------
 
 async def test_change_password_wrong_current_returns_401(auth_client):
     """change-password with the wrong current password must return 401."""

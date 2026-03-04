@@ -53,7 +53,7 @@ function runDomMoveEffect(
   }
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// --- helpers ------------------------------------------------------------------
 
 function makePool(): HTMLDivElement {
   const pool = document.createElement('div');
@@ -73,7 +73,7 @@ function makeCell(): HTMLDivElement {
   return cell;
 }
 
-// ─── tests ────────────────────────────────────────────────────────────────────
+// --- tests --------------------------------------------------------------------
 
 describe('DOM-move effect — panel lifecycle', () => {
   it('moves an assigned panel from the pool into its cell mount-point', () => {
@@ -189,7 +189,7 @@ describe('DOM-move effect — panel lifecycle', () => {
   });
 });
 
-// ─── ref-cleanup helper ───────────────────────────────────────────────────────
+// --- ref-cleanup helper -------------------------------------------------------
 // Models the ref callback in Dashboard.tsx that fires when React unmounts a
 // pool div.  Before deleting the entry from panelRefsMap it moves the node
 // back to the pool so React finds it where it expects it.

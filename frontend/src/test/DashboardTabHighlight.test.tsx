@@ -26,7 +26,7 @@ import { Dashboard } from '../pages/Dashboard';
 import { ToastProvider } from '../components/Toast';
 import type { Device } from '../api/client';
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
+// -- Mocks ---------------------------------------------------------------------
 
 vi.mock('../api/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../api/client')>();
@@ -124,7 +124,7 @@ vi.mock('../components/DeviceForm',           () => ({ DeviceForm: () => null })
 vi.mock('../components/ChangePasswordModal',  () => ({ ChangePasswordModal: () => null }));
 vi.mock('../components/AuditLogModal',        () => ({ AuditLogModal: () => null }));
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 function setup() {
   const onLogout = vi.fn();
@@ -149,7 +149,7 @@ function getTabChip(name: string) {
 
 beforeEach(() => vi.clearAllMocks());
 
-// ── Single-pane: first connection ─────────────────────────────────────────────
+// -- Single-pane: first connection ---------------------------------------------
 
 describe('Tab highlight — single pane, one open tab', () => {
   it('the connected tab has data-tab-focused="true"', async () => {
@@ -182,7 +182,7 @@ describe('Tab highlight — single pane, one open tab', () => {
   });
 });
 
-// ── Single-pane: two open tabs ────────────────────────────────────────────────
+// -- Single-pane: two open tabs ------------------------------------------------
 
 describe('Tab highlight — single pane, two open tabs', () => {
   it('only the most recently connected tab is focused', async () => {
@@ -232,7 +232,7 @@ describe('Tab highlight — single pane, two open tabs', () => {
   });
 });
 
-// ── Grid layout: split pane (1|1) ────────────────────────────────────────────
+// -- Grid layout: split pane (1|1) --------------------------------------------
 
 describe('Tab highlight — split layout, two visible tabs', () => {
   /**
@@ -305,7 +305,7 @@ describe('Tab highlight — split layout, two visible tabs', () => {
   });
 });
 
-// ── data-tab-key attribute ────────────────────────────────────────────────────
+// -- data-tab-key attribute ----------------------------------------------------
 
 describe('Tab highlight — data-tab-key attribute', () => {
   it('every tab chip carries a numeric data-tab-key', async () => {

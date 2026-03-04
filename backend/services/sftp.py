@@ -15,7 +15,7 @@ from backend.services.ssh import _known_hosts_path, _make_accept_new_client
 
 log = logging.getLogger(__name__)
 
-# ── Session store ─────────────────────────────────────────────────────────────
+# -- Session store -------------------------------------------------------------
 
 @dataclass
 class _SftpSession:
@@ -29,7 +29,7 @@ class _SftpSession:
 _sftp_sessions: dict[str, _SftpSession] = {}
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# -- Public API ----------------------------------------------------------------
 
 async def open_sftp_session(
     hostname: str,
@@ -116,7 +116,7 @@ def get_sftp_session_meta(session_id: str) -> tuple[str, str, str | None]:
     return "", "", None
 
 
-# ── Filesystem helpers ────────────────────────────────────────────────────────
+# -- Filesystem helpers --------------------------------------------------------
 
 async def list_directory(session_id: str, remote_path: str) -> list[dict]:
     """

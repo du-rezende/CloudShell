@@ -5,7 +5,7 @@ Each active session is identified by a UUID (session_id).
 Sessions are created, streamed over a WebSocket, and torn down on disconnect.
 
 Wire protocol
-─────────────
+-------------
 Browser → Server (binary WebSocket frames):
   • Regular input:  raw bytes forwarded straight to SSH stdin
   • Resize signal:  a single JSON frame  {"type":"resize","cols":<n>,"rows":<n>}
@@ -26,7 +26,7 @@ from fastapi import WebSocket
 
 log = logging.getLogger(__name__)
 
-# ── Session store ─────────────────────────────────────────────────────────────
+# -- Session store -------------------------------------------------------------
 
 @dataclass
 class _Session:
@@ -41,9 +41,9 @@ class _Session:
 _sessions: dict[str, _Session] = {}
 
 
-# ── known_hosts helper ────────────────────────────────────────────────────────
+# -- known_hosts helper --------------------------------------------------------
 
-# ── known_hosts / accept-new policy ──────────────────────────────────────────
+# -- known_hosts / accept-new policy ------------------------------------------
 
 def _known_hosts_path() -> str | None:
     """Return the known_hosts file path if DATA_DIR is set, else None (trust-all)."""
@@ -102,7 +102,7 @@ def _make_accept_new_client(known_hosts_path: str) -> type:
     return _AcceptNewClient
 
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# -- Public API ----------------------------------------------------------------
 
 async def create_session(
     hostname: str,
@@ -288,7 +288,7 @@ def get_session_meta(session_id: str) -> tuple[str, str, str | None]:
     return "", "", None
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# -- Helpers -------------------------------------------------------------------
 
 async def _ws_error(websocket: WebSocket, message: str) -> None:
     """Send a human-readable error message as a binary frame to the terminal."""

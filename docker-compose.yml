@@ -1,6 +1,6 @@
 services:
 
-  # ── Backend: FastAPI + AsyncSSH ─────────────────────────────────────────────
+  # -- Backend: FastAPI + AsyncSSH ---------------------------------------------
   backend:
     build:
       context: .
@@ -22,7 +22,7 @@ services:
     networks:
       - internal
 
-  # ── Frontend: Nginx + React bundle + reverse proxy ──────────────────────────
+  # -- Frontend: Nginx + React bundle + reverse proxy --------------------------
   frontend:
     build:
       context: .

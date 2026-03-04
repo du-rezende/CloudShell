@@ -18,7 +18,7 @@ from backend.models.audit import AuditLog
 from backend.services.audit import ACTION_LOGIN, ACTION_LOGOUT, ACTION_PASSWORD_CHANGED
 
 
-# ── Login ─────────────────────────────────────────────────────────────────────
+# -- Login ---------------------------------------------------------------------
 
 async def test_login_writes_audit_entry(client, db_session):
     """A successful login creates exactly one LOGIN audit entry."""
@@ -61,7 +61,7 @@ async def test_failed_login_does_not_write_audit(client, db_session):
     assert len(rows) == 0
 
 
-# ── Logout ────────────────────────────────────────────────────────────────────
+# -- Logout --------------------------------------------------------------------
 
 async def test_logout_writes_audit_entry(auth_client, db_session):
     """A successful logout creates a LOGOUT audit entry after the LOGIN entry."""
@@ -79,7 +79,7 @@ async def test_logout_writes_audit_entry(auth_client, db_session):
     assert logout_entry.username == "admin"
 
 
-# ── Change password ───────────────────────────────────────────────────────────
+# -- Change password -----------------------------------------------------------
 
 async def test_change_password_writes_audit_entry(auth_client, db_session):
     """A successful password change creates a PASSWORD_CHANGED audit entry."""

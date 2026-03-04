@@ -34,7 +34,7 @@ from backend.services.sftp import (
 )
 
 
-# ── Fixtures ─────────────────────────────────────────────────────────────────
+# -- Fixtures -----------------------------------------------------------------
 
 def _make_fake_sftp_entry(name: str, is_dir: bool = False, size: int = 1024) -> MagicMock:
     """Build a mock asyncssh SFTPName object."""
@@ -82,7 +82,7 @@ def _make_fake_conn(sftp_client: MagicMock) -> MagicMock:
     return conn
 
 
-# ── open_sftp_session ─────────────────────────────────────────────────────────
+# -- open_sftp_session ---------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_open_sftp_session_success():
@@ -126,7 +126,7 @@ async def test_open_sftp_session_propagates_connection_error():
             await open_sftp_session(hostname="host", port=22, username="user")
 
 
-# ── close_sftp_session ────────────────────────────────────────────────────────
+# -- close_sftp_session --------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_close_sftp_session_removes_entry():
@@ -153,7 +153,7 @@ async def test_close_sftp_session_noop_for_unknown():
     await close_sftp_session("nonexistent-session-id")
 
 
-# ── get_sftp_session_meta ─────────────────────────────────────────────────────
+# -- get_sftp_session_meta -----------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_get_sftp_session_meta_unknown():
@@ -164,7 +164,7 @@ async def test_get_sftp_session_meta_unknown():
     assert ip is None
 
 
-# ── list_directory ────────────────────────────────────────────────────────────
+# -- list_directory ------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_list_directory_unknown_session():
@@ -232,7 +232,7 @@ async def test_list_directory_entry_structure():
         _sftp_sessions.pop(sid, None)
 
 
-# ── read_file_bytes ───────────────────────────────────────────────────────────
+# -- read_file_bytes -----------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_read_file_bytes_unknown_session():
@@ -259,7 +259,7 @@ async def test_read_file_bytes_returns_content():
         _sftp_sessions.pop(sid, None)
 
 
-# ── write_file_bytes ──────────────────────────────────────────────────────────
+# -- write_file_bytes ----------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_write_file_bytes_unknown_session():
@@ -285,7 +285,7 @@ async def test_write_file_bytes_calls_open_write():
         _sftp_sessions.pop(sid, None)
 
 
-# ── delete_remote ─────────────────────────────────────────────────────────────
+# -- delete_remote -------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_delete_remote_file():
@@ -325,7 +325,7 @@ async def test_delete_remote_directory():
         _sftp_sessions.pop(sid, None)
 
 
-# ── rename_remote ─────────────────────────────────────────────────────────────
+# -- rename_remote -------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_rename_remote():
@@ -345,7 +345,7 @@ async def test_rename_remote():
         _sftp_sessions.pop(sid, None)
 
 
-# ── mkdir_remote ──────────────────────────────────────────────────────────────
+# -- mkdir_remote --------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_mkdir_remote():
