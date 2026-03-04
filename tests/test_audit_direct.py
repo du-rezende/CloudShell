@@ -17,8 +17,6 @@ import pytest
 from backend.models.audit import AuditLog
 from backend.routers.audit import list_audit_logs, trigger_prune
 
-
-# -- Fake helpers --------------------------------------------------------------
 # -- Fake helpers --------------------------------------------------------------
 
 class _FakeDB:
