@@ -5,6 +5,7 @@
 ## Language specification
 
 - Strict NO EMOJI policy
+- Strict NO EM-DASH policy
 - Test coverage for all new features and bug fixes
 - Keep files as small as possible, split components into separate files to improve readability and maintainability.
 
@@ -45,3 +46,7 @@
 - Ensure that any changes to the API are backward compatible
 - Deprecate old endpoints and provide clear migration paths for users
 - Provide an upgrade path from old database schemas to new ones
+
+## Documentation
+
+- Every new feature should be documented in the README.md (or in one of the referenced markdown files) with clear instructions on how to use it
