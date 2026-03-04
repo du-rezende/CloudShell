@@ -166,6 +166,11 @@ export function DeviceList({
                           ? <KeyRound size={10} className="text-slate-500 flex-shrink-0" aria-label="SSH key" />
                           : <Lock     size={10} className="text-slate-600 flex-shrink-0" aria-label="Password" />
                         }
+                        {d.connection_type === "ssh" && (
+                          <span className="text-[9px] bg-green-900/60 text-green-300 border border-green-700/50 rounded px-1 leading-4 flex-shrink-0">
+                            SSH
+                          </span>
+                        )}
                         {d.connection_type === "sftp" && (
                           <span className="text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 rounded px-1 leading-4 flex-shrink-0">
                             SFTP

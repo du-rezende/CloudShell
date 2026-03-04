@@ -14,6 +14,7 @@
  * - collapsed mode: shows ChevronsRight toggle button
  * - collapsed mode: clicking the toggle calls onToggleCollapse
  * - collapsed mode: renders device icon buttons instead of full rows
+ * - shows SSH badge for ssh connection type
  * - shows SFTP badge for sftp connection type
  * - shows SSH key icon for key auth type
  * - device name does not have truncate class at rest (no hover)
@@ -109,6 +110,11 @@ describe('DeviceList — device rows', () => {
   it('shows the SFTP badge for sftp connection type', () => {
     setup({ devices: [makeDevice({ connection_type: 'sftp' })] });
     expect(screen.getByText('SFTP')).toBeInTheDocument();
+  });
+
+  it('shows SSH badge for ssh connection type', () => {
+    setup({ devices: [makeDevice({ connection_type: 'ssh' })] });
+    expect(screen.getByText('SSH')).toBeInTheDocument();
   });
 
   it('shows FTP badge for ftp connection type', () => {
