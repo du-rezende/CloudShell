@@ -40,6 +40,8 @@
 - Implement rate limiting and monitoring for all APIs
 - Isolate all functions and services to minimize the attack surface
   - Isolation is achieved by having a microservices architecture with backend on a different container from the frontend
+- Ensure all APIs are protected with authentication and authorization
+  - Only exception are login and health endpoints
 
 ## Backward compatibility
 
@@ -50,3 +52,5 @@
 ## Documentation
 
 - Every new feature should be documented in the README.md (or in one of the referenced markdown files) with clear instructions on how to use it
+- Every new feature should be documented in the index.html file of the website folder with a dedicated feature tile
+
