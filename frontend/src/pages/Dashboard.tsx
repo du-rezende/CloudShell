@@ -8,9 +8,10 @@ import { FtpFileManager } from "../components/FtpFileManager";
 import { SessionBadge } from "../components/SessionBadge";
 import { ChangePasswordModal } from "../components/ChangePasswordModal";
 import { AuditLogModal } from "../components/AuditLogModal";
+import { ConfigTransferModal } from "../components/ConfigTransferModal";
 import { useToast } from "../components/Toast";
 import { SplitView, LayoutPicker, useGridLayout } from "../components/splitview";
-import { ClipboardList, FolderOpen, KeyRound, LogOut, Terminal as TerminalIcon } from "lucide-react";
+import { ArrowLeftRight, ClipboardList, FolderOpen, KeyRound, LogOut, Terminal as TerminalIcon } from "lucide-react";
 
 interface Props {
   onLogout: () => void;
@@ -32,6 +33,7 @@ export function Dashboard({ onLogout }: Props) {
   const [editDevice, setEditDevice] = useState<Device | undefined>();
   const [showChangePw, setShowChangePw] = useState(false);
   const [showAuditLog, setShowAuditLog] = useState(false);
+  const [showConfigTransfer, setShowConfigTransfer] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const toast = useToast();
 
@@ -240,6 +242,13 @@ export function Dashboard({ onLogout }: Props) {
             <ClipboardList size={16} />
           </button>
           <button
+            onClick={() => setShowConfigTransfer(true)}
+            className="icon-btn text-slate-400 hover:text-blue-400"
+            title="Export / Import configuration"
+          >
+            <ArrowLeftRight size={16} />
+          </button>
+          <button
             onClick={() => setShowChangePw(true)}
             className="icon-btn text-slate-400 hover:text-blue-400"
             title="Change password"
@@ -389,6 +398,14 @@ export function Dashboard({ onLogout }: Props) {
       {/* Audit log modal */}
       {showAuditLog && (
         <AuditLogModal onClose={() => setShowAuditLog(false)} />
+      )}
+
+      {/* Config export / import modal */}
+      {showConfigTransfer && (
+        <ConfigTransferModal
+          onClose={() => setShowConfigTransfer(false)}
+          onImported={fetchDevices}
+        />
       )}
     </div>
   );
