@@ -18,6 +18,7 @@ import sys
 from typing import List, Tuple
 
 from fastapi.routing import APIRoute
+from fastapi.security import OAuth2PasswordBearer
 from starlette.routing import WebSocketRoute
 
 try:
@@ -37,6 +38,9 @@ def classify_http_route(route: APIRoute) -> bool:
             for d in deps.dependencies:
                 call = getattr(d, "call", None)
                 if call is get_current_user:
+                    return True
+                # Check for OAuth2PasswordBearer instances (e.g., oauth2_scheme)
+                if isinstance(call, OAuth2PasswordBearer):
                     return True
                 # Fallback: compare by name (catches get_current_user, _get_payload, etc.)
                 call_name = getattr(call, "__name__", None)
