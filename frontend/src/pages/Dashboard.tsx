@@ -117,6 +117,13 @@ export function Dashboard({ onLogout }: Props) {
     const tab: Tab = { device: d, key: ++tabCounter };
     setTabs((prev) => [...prev, tab]);
     setActiveTab(tab.key);
+    // Focus the cell where the tab will land: first empty cell, or the
+    // currently focused cell if all are occupied.
+    let targetCell = grid.focusedCell;
+    for (const [idx, v] of grid.assignments) {
+      if (v === null) { targetCell = idx; break; }
+    }
+    grid.setFocusedCell(targetCell);
     grid.autoPlace(tab.key);
   };
 
@@ -168,9 +175,17 @@ export function Dashboard({ onLogout }: Props) {
         {/* Tab strip — row 2 on mobile (full width), inline on sm+ */}
         <div className="flex items-center gap-1 overflow-x-auto min-w-0 scrollbar-none
                         order-3 sm:order-2 w-full sm:w-auto sm:flex-1 py-0.5 sm:py-0">
-          {tabs.map((tab) => (
+          {tabs.map((tab) => {
+            // A tab is "focused" when it lives in the currently focused grid cell.
+            const isFocused = grid.assignments.get(grid.focusedCell) === tab.key;
+            // A tab is "visible" when it is assigned to any grid cell (but not the focused one).
+            const isVisible = !isFocused && Array.from(grid.assignments.values()).includes(tab.key);
+            return (
             <div
               key={tab.key}
+              data-tab-key={tab.key}
+              data-tab-focused={isFocused ? "true" : undefined}
+              data-tab-visible={isVisible ? "true" : undefined}
               onClick={() => {
                 setActiveTab(tab.key);
                 // Highlight the cell that holds this tab; if not in any cell, auto-place it
@@ -182,8 +197,10 @@ export function Dashboard({ onLogout }: Props) {
               }}
               className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs cursor-pointer select-none
                           whitespace-nowrap transition-colors flex-shrink-0
-                ${activeTab === tab.key
+                ${isFocused
                   ? "bg-blue-600/30 text-blue-300 border border-blue-600/50"
+                  : isVisible
+                  ? "bg-slate-700/50 text-slate-300 border border-slate-600/50"
                   : "text-slate-400 hover:bg-slate-800 border border-transparent"
                 }`}
             >
@@ -202,7 +219,8 @@ export function Dashboard({ onLogout }: Props) {
                 x
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Right actions — row 1, right (ml-auto pushes it to the right edge) */}
