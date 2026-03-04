@@ -432,3 +432,48 @@ export async function ftpMkdir(sessionId: string, path: string): Promise<void> {
     body: JSON.stringify({ path }),
   });
 }
+
+// ── Config transfer ───────────────────────────────────────────────────────────
+
+export interface ImportResult {
+  imported: number;
+  skipped: number;
+  errors: number;
+  messages: string[];
+}
+
+/** Download the current device configuration as a JSON blob URL ready for saving. */
+export async function exportConfig(): Promise<Blob> {
+  const res = await fetch(`${BASE}/config/export`, {
+    headers: { ...authHeaders() },
+  });
+  if (res.status === 401) {
+    _forceLogout();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Export failed");
+  }
+  return res.blob();
+}
+
+/** Upload a previously-exported JSON file and import its devices. */
+export async function importConfig(file: File): Promise<ImportResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${BASE}/config/import`, {
+    method: "POST",
+    headers: { ...authHeaders() },
+    body: form,
+  });
+  if (res.status === 401) {
+    _forceLogout();
+    throw new Error("Session expired");
+  }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail ?? "Import failed");
+  }
+  return res.json() as Promise<ImportResult>;
+}
