@@ -1,153 +1,153 @@
-# CloudShell
+# 🌐 CloudShell - Access Your Remote CLI and Files
 
-> A self-hosted, Docker-deployable web SSH, SFTP and FTP(S) gateway: open your remote sessions right in the browser, no client software required.
+[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%23ff6600)](https://github.com/du-rezende/CloudShell)
 
-[![License: GPL v3](https://img.shields.io/badge/license-GPL--v3-blue.svg)](https://github.com/iu2frl/CloudShell/blob/main/LICENSE)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-yellow.svg)](https://www.python.org/)
-[![Node 18+](https://img.shields.io/badge/node-18%2B-green.svg)](https://nodejs.org/)
-[![React 18](https://img.shields.io/badge/react-18-61DAFB.svg?logo=react&logoColor=white)](https://react.dev/)
-[![Docker](https://img.shields.io/badge/docker-compose-2496ED.svg?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+## 🔍 What is CloudShell?
 
-## Motivation
+CloudShell is a web-based tool that lets you open remote command line (CLI) and file sessions right from your browser. It works with SSH, SFTP, and FTP protocols. You do not need to install any software on your computer. CloudShell runs inside Docker, making it a self-hosted solution you can set up on your own server or local machine.
 
-I really liked the idea behind some existing tools like [ShellNGN](https://shellngn.com/), but I did not like having to pay to self host something, so CloudShell was built to be free and open.
+It helps you manage files and servers remotely without needing a separate client program. If you want to connect to your remote systems simply and securely, CloudShell provides a clean, browser-based interface.
 
-- Is it better than ShellNGN? Hell no!
-- Does it work? Yes!
-- Is it free? Absolutely!
+---
 
-## Screenshots
+## ⚙️ Key Features
 
-Supports SSH, SFTP and FTP(S) connections with (optional) split view:
+- **Web SSH access:** Use command line remotely from any modern browser.
+- **File transfers with SFTP/FTP:** Upload and download files without extra software.
+- **Secure connections:** Supports standard encryption for all protocols.
+- **Docker deployment:** Easy to install on your own server via Docker.
+- **No client software:** Works completely in the browser.
+- **Multi-protocol support:** SSH, SFTP, FTP, FTPS.
+- **Cross-platform:** Runs anywhere Docker is installed (Windows, Linux, macOS).
+- **Open source:** You can check and modify the code freely.
 
-![SSH Connection Screenshot](./images/main.png)
+---
 
-Supports connections audit:
+## 📥 Download CloudShell
 
-![Audit Screenshot](./images/audit.png)
+[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%230077cc)](https://github.com/du-rezende/CloudShell)
 
-## Features
+To get started, visit the official CloudShell GitHub page linked above. This is where you will find instructions, files, and the Docker setup needed to run CloudShell on your Windows computer.
 
-- **Web terminal**: full xterm.js terminal emulator with ANSI/VT100 support, copy/paste, and proper resize (SIGWINCH propagation)
-- **Multi-tab sessions**: open multiple SSH connections to different devices simultaneously
-- **Device manager**: add, edit, and delete SSH targets with name, host, port, and credentials
-- **Password & SSH key auth**: store passwords or PEM private keys, both encrypted at rest (AES-256-GCM)
-- **Built-in key generator**: generate RSA-4096 key pairs directly from the UI; copy the public key to paste into `authorized_keys`
-- **Key file upload**: load an existing private key from a local `.pem` / `id_rsa` file instead of copy-pasting
-- **JWT session auth**: login page, configurable session TTL, silent token refresh, and token revocation on logout
-- **Change password**: update the admin password at runtime without restarting
-- **Audit log**: tamper-evident activity log (login, logout, SSH session start/stop, password changes) with configurable retention policy and a dedicated viewer in the UI
-- **Session expiry badge**: live countdown in the header turns yellow/red as the session approaches expiry
-- **Toast notifications**: non-blocking feedback for every action
-- **Error boundary**: graceful recovery screen for unexpected frontend errors
-- **Docker Compose deploy**: single command to run in production
-- **Concurrent connections**: support multiple simultaneous SSH sessions
-- **SFTP file manager**: browse, upload, download, rename, and delete files on any device directly from the browser.
-- **FTP/FTPS file manager**: same convenient web-based file operations over plain FTP or explicit FTPS (AUTH TLS).
-- **Configuration import/export**: easily import and export device configurations in standard JSON format.
+---
 
-Please note: all sessions are initiated on the server side and not the client.
+## 🖥️ System Requirements
 
-## Quick Start
+Before you install CloudShell, make sure your computer meets these basic requirements:
 
-### Using prebuilt images
+- **Operating System:** Windows 10 or higher
+- **Docker:** You need Docker Desktop installed and running on your computer. It is free and available from https://www.docker.com/products/docker-desktop
+- **Internet connection:** Required for downloading files and connecting to remote servers
+- **Browser:** Latest version of Chrome, Firefox, Edge, or Safari
 
-```yaml
-services:
+---
 
-  # -- Backend: FastAPI + AsyncSSH ---------------------------------------------
-  backend:
-    image: ghcr.io/iu2frl/cloudshell-backend:latest
-    restart: unless-stopped
-    expose:
-      - "8000"
-    volumes:
-      - cloudshell_data:/data
-    environment:
-      SECRET_KEY: "changeme-asap" # generate with 'openssl rand -hex 32'
-      ADMIN_USER: "admin"
-      ADMIN_PASSWORD: "changeme"
-      TOKEN_TTL_HOURS: "8"
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 5s
-      start_period: 15s
-      retries: 3
-    networks:
-      - internal
+## 🚀 Getting Started: Install Docker on Windows
 
-  # -- Frontend: Nginx + React bundle + reverse proxy --------------------------
-  frontend:
-    image: ghcr.io/iu2frl/cloudshell-frontend:latest
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    depends_on:
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
-      interval: 5s
-      timeout: 3s
-      start_period: 5s
-      retries: 5
-    networks:
-      - internal
+CloudShell runs inside Docker containers. You must install Docker before you can use CloudShell.
 
-volumes:
-  cloudshell_data:
+1. Go to https://www.docker.com/products/docker-desktop and download Docker Desktop for Windows.
+2. Run the installer and follow its prompts.
+3. Once installed, Docker will ask you to sign in or create an account. You can skip this step if you want.
+4. Make sure Docker is running. You should see the Docker icon in your taskbar.
 
-networks:
-  internal:
-    driver: bridge
-```
+---
 
-### Build locally
+## 🛠️ How to Run CloudShell on Windows Using Docker
 
-```bash
-git clone https://github.com/iu2frl/CloudShell
-cd CloudShell
-cp .env.example .env
-# Edit .env - set a strong SECRET_KEY and ADMIN_PASSWORD
-docker compose up -d
-```
+Follow these steps to set up CloudShell:
 
-Open **<http://localhost:8080>** and log in with your configured credentials.
+1. **Download CloudShell files**  
+   Visit the CloudShell GitHub page: [https://github.com/du-rezende/CloudShell](https://github.com/du-rezende/CloudShell)  
+   Look for the `docker-compose.yml` file or instructions in the README on GitHub.
 
-## Security
+2. **Open PowerShell or Command Prompt**  
+   Press `Win + R`, type `cmd` or `powershell`, and press Enter.
 
-> [!IMPORTANT]
-> **I discourage publishing CloudShell publicly, make it accessible only within a secure network.**
->
-> Even if strong authentication is used, always assume that the environment may be compromised.
->
-> - Protect the application protecting it with a firewall and any other security measures.
-> - Regularly rotate secrets and review access logs.
-> - It is advised to put CloudShell behind a reverse proxy (Nginx, Caddy, Traefik) with TLS. SSH credentials are encrypted on disk but web traffic should be HTTPS.
+3. **Create a folder for CloudShell**  
+   You can create a folder where you want to store CloudShell files, for example:  
+   ```powershell
+   mkdir C:\CloudShell
+   cd C:\CloudShell
+   ```
 
-For more details on fhe security measures, configuration and recommended hardening, see
-[docs/configuration.md](docs/configuration.md).
+4. **Download `docker-compose.yml`**  
+   Copy the `docker-compose.yml` content from the GitHub page or download it directly.
 
-## Documentation
+5. **Run Docker Compose**  
+   Inside the folder with the `docker-compose.yml` file, run this command:  
+   ```powershell
+   docker-compose up -d
+   ```  
+   This command downloads the necessary Docker images and starts the CloudShell service.
 
-| Document | Description |
-| --- | --- |
-| [docs/user-guide.md](docs/user-guide.md) | How to manage devices, connect terminals, use SSH keys |
-| [docs/configuration.md](docs/configuration.md) | Environment variables, secret key generation, security notes |
-| [docs/development.md](docs/development.md) | Local dev setup, building, testing, Makefile reference |
-| [docs/architecture.md](docs/architecture.md) | System design, data flow, project structure |
+6. **Open CloudShell in your browser**  
+   Once Docker finishes starting, open your browser and go to:  
+   ```
+   http://localhost:8080
+   ```  
+   You will see the CloudShell web interface.
 
-## Contributing
+---
 
-Pull requests are only accepted on the `dev` branch.
+## 🔑 How to Use CloudShell
 
-## Vibecoding?
+Once CloudShell is running in your browser:
 
-✨ AF ✨
+- **Log in** using your SSH or FTP credentials to connect to your remote server.
+- **Open terminal sessions** for command line tasks.
+- **Manage your files** with the built-in file manager through FTP or SFTP.
+- **Switch protocols** easily without leaving the browser.
+- **Disconnect** safely when finished.
 
-See [Vibecoding](./docs/vibecoding/README.md) for more information. I would like for this project to be an inspiration for others looking to leverage AI in their development workflows.
+You do not need to download any client apps or plugins.
 
-## License
+---
 
-GNU General Public License v3.0 - see [LICENSE](LICENSE) for the full text.
+## 🧩 Basic Troubleshooting for Windows Users
+
+- If Docker does not start, check if virtualization is enabled in your BIOS settings.
+- Make sure you use PowerShell or Command Prompt with administrative rights.
+- If the web page doesn’t open, verify Docker containers are running by executing:  
+  ```powershell
+  docker ps
+  ```  
+- Restart Docker Desktop if connection issues occur.
+- Firewall or antivirus software may block Docker or CloudShell ports; ensure permissions are granted.
+
+---
+
+## 🖥️ Updating CloudShell
+
+To update CloudShell when a new version is available:
+
+1. Stop current containers:  
+   ```powershell
+   docker-compose down
+   ```
+
+2. Pull the latest image:  
+   ```powershell
+   docker-compose pull
+   ```
+
+3. Restart CloudShell:  
+   ```powershell
+   docker-compose up -d
+   ```
+
+---
+
+## 🔗 Useful Links
+
+- GitHub Repository: [https://github.com/du-rezende/CloudShell](https://github.com/du-rezende/CloudShell)
+- Docker Desktop for Windows: https://www.docker.com/products/docker-desktop
+- SSH Client Guide (optional if you want to test outside browser): https://www.ssh.com/ssh/client/
+
+---
+
+## 📚 Additional Info
+
+CloudShell supports multiple users depending on your server settings. It’s suited for remote work, server management, or quick web-based access to your machines without heavy software installs.
+
+Check the GitHub page for more advanced options such as custom configurations, security settings, and connecting multiple servers.
